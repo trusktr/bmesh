@@ -1,18 +1,15 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title></title></head>
-<style>canvas{ display:block; } body, html { padding:0px; margin:0px; width:100%; height:100%; }</style>
-<body><script type="module">
 //#region IMPORTS
 import useThreeWebGL2, { useDarkScene, useVisualDebug } from '../_lib/useThreeWebGL2.js';
 
 import { BMesh } from 'bmesh';
-import vec3 from '../../src/maths/vec3.ts';
+// import vec3 from '../../src/maths/vec3.ts';
+import vec3 from 'bmesh/src/maths/vec3.js';
 //#endregion
 
 //#region MAIN
 let App   = useDarkScene( useThreeWebGL2() );
 let Ref   = {
-    vert : null,
-    edge : null,
+    loop : null,
 };
 let Debug;
 
@@ -44,8 +41,8 @@ window.addEventListener( 'load', async _=>{
 
     console.log( mesh );
 
-    Ref.vert = mesh.vertices[ 1 ];
-    Ref.edge = Ref.vert.edge;
+    Ref.loop = mesh.faces[ 0 ].loop.prev;
+    // Ref.loop = mesh.faces[ mesh.faces.length-1 ].loop;
 
     render();
 
@@ -64,7 +61,9 @@ window.addEventListener( 'load', async _=>{
 function initUI(){
     document.getElementById( 'btnPrev' ).addEventListener( 'click', loopPrev );
     document.getElementById( 'btnNext' ).addEventListener( 'click', loopNext );
+
     document.getElementById( 'btnRPrev' ).addEventListener( 'click', loopRPrev );
+    document.getElementById( 'btnRNext' ).addEventListener( 'click', loopRNext );
 }
 
 function render(){
@@ -76,39 +75,62 @@ function render(){
     for( const v of mesh.vertices ) Debug.pnt.add( v.pos, 0x00ff00, 3 );
     for( const e of mesh.edges )    Debug.ln.add( e.v1.pos, e.v2.pos, 0x00ffff );
 
-    const vert = Ref.vert;
-    const ov   = Ref.edge.getOtherVert( vert );
+    const loop = Ref.loop;
 
-    Debug.pnt.add( vert.pos, 0xffff00, 6, 2 );
-    Debug.pnt.add( ov.pos, 0x00ffff, 6, 2 );
-    Debug.ln.add( vert.pos, ov.pos, 0xffff00, 0x00ffff );
+    const a = loop.vert.pos.slice(); // loop.edge.v1.pos.slice();
+    const b = ( loop.vert === loop.edge.v1 )
+                    ? loop.edge.v2.pos.slice()
+                    : loop.edge.v1.pos.slice();
+
+    const n = loop.face.norm.slice();
+    vec3.scale( n, 0.2, n );
+    vec3.add( a, n, a );
+    vec3.add( b, n, b );
+
+    Debug.pnt.add( a, 0xffff00, 4 );
+    Debug.ln.add( a, b, 0xffff00 );
+    renderFace();
+}
+
+function renderFace(){
+    let iter = Ref.loop;
+    let x    = 0;
+    let y    = 0;
+    let z    = 0;
+    let cnt  = 0;
+    do{
+        x += iter.vert.pos[0];
+        y += iter.vert.pos[1];
+        z += iter.vert.pos[2];
+        cnt++;
+    } while( ( iter = iter.next ) != Ref.loop );
+
+    x /= cnt;
+    y /= cnt;
+    z /= cnt;
+
+    Debug.pnt.add( [x,y,z], 0xffff00, 5, 2 );
 }
 
 function loopNext(){
-    Ref.edge = Ref.edge.diskEdgeNext( Ref.vert );
+    Ref.loop = Ref.loop.next;
     render();
 }
 
 function loopPrev(){
-    Ref.edge = Ref.edge.diskEdgePrev( Ref.vert );
+    Ref.loop = Ref.loop.prev;
     render();
 }
 
 function loopRPrev(){
-    Ref.vert = Ref.edge.getOtherVert( Ref.vert );
+    Ref.loop = Ref.loop.radial_prev;
     render();
 }
 
+function loopRNext(){
+    Ref.loop = Ref.loop.radial_next;
+    render();
+}
+
+// function onPreRender( dt, et ){}
 //#endregion
-</script>
-
-<style>
-    .container{ position:fixed; top:10px; left:43%; }
-</style>
-<div class="container">
-    <button id="btnPrev">Prev Edge</button>
-    <button id="btnNext">Next Edge</button><br>
-    <button id="btnRPrev">Flip</button>
-</div>
-
-</body></html>

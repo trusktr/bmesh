@@ -11,6 +11,7 @@ const fileName = {
 
 export default defineConfig(({ command, mode, ssrBuild }) => {
     if ( command === 'serve') {
+      /** @type {import("vite").UserConfig} */
       return {
             base      : './',
             // publicDir : path.join( __dirname, 'prototypes' ),
@@ -29,10 +30,17 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
             },
 
             resolve:{
-              alias:{ 
-                '@bmesh': './src/index.ts',
-              },
-          }
+                alias: [
+                    {
+                        find: /^bmesh/,
+                        replacement: 'BMESH',
+                        customResolver(specifier) {
+                            if (specifier === 'BMESH') return path.resolve(__dirname, 'src', 'index.ts')
+                            else if (specifier.startsWith('BMESH/')) return specifier.replace('BMESH', __dirname).replace('.js', '.ts')
+                        }
+                    }
+                ],
+            },
         }
     } else {
       // command === 'build'
