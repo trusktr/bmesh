@@ -16,7 +16,7 @@ typedef struct BMVert {
 
 import type Edge from './Edge';
 
-export default class Vertex{
+export class Vertex{
     // #region MAIN
     id   : string           = window.crypto.randomUUID();
     pos  : Array< number >  = [0,0,0];
@@ -36,3 +36,5 @@ export default class Vertex{
     }
     // #endregion
 }
+
+export default Vertex

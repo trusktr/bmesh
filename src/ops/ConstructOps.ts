@@ -7,7 +7,7 @@ import type Face    from '../ds/Face';
 import CoreOps      from './CoreOps';
 // #endregion
 
-export default class ConstructOps{
+export class ConstructOps{
 
     // #region EDGES
 
@@ -131,3 +131,5 @@ export default class ConstructOps{
     // #endregion
 
 }
+
+export default ConstructOps

@@ -13,7 +13,7 @@ import StructOps    from '../ops/StructOps';
 import { NULLY }    from '../constants';
 // #endregion
 
-export default class CoreOps{
+export class CoreOps{
     
     // #region FACES
 
@@ -102,8 +102,6 @@ export default class CoreOps{
 
         let l_iter  : Loop;
         let l_first : Loop;
-        let l_f1    : Loop = NULLY;
-        let l_f2    : Loop = NULLY;
         
         let f1len   : number;
         let f2len   : number;
@@ -113,8 +111,8 @@ export default class CoreOps{
         const v2   = l_v2.vert;
         const e    = bm.addEdge( v1, v2 ) as Edge;
         const f2   = bm.addFace();
-        l_f1 = bm.addLoop( v2, e, f ); 
-        l_f2 = bm.addLoop( v1, e, f2 );
+        const l_f1 = bm.addLoop( v2, e, f ); 
+        const l_f2 = bm.addLoop( v1, e, f2 );
 
         l_f1.prev       = l_v2.prev;
         l_f2.prev       = l_v1.prev;
@@ -1005,3 +1003,5 @@ export default class CoreOps{
     // #endregion
 
 }
+
+export default CoreOps

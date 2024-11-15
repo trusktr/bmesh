@@ -40,7 +40,7 @@ export class DiskLink{
     prev !: Edge;  // Will only be set to null when deleting to help with garbage collection
 }
 
-export default class Edge{
+export class Edge{
 
     // #region MAIN
     id       : string = window.crypto.randomUUID();
@@ -83,3 +83,5 @@ export default class Edge{
     // #endregion
 
 }
+
+export default Edge

@@ -10,7 +10,7 @@ import type Face        from '../ds/Face';
 import { NULLY }        from '../constants';
 // #endregion
 
-export default class StructOps{
+export class StructOps{
 
     // #region EDGES
 
@@ -239,3 +239,5 @@ export default class StructOps{
     // #endregion
 
 }
+
+export default StructOps

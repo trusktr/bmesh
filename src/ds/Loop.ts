@@ -97,7 +97,7 @@ import type Face    from './Face';
 
 // Note: Each loop represents an edge of a face stored in a circular linked lists
 // Also holds other loops(faces) that share this edge
-export default class Loop {
+export class Loop {
 
     // #region MAIN
     vert        !: Vertex;      
@@ -133,6 +133,15 @@ export default class Loop {
         return { [Symbol.iterator](){ return { next }; } };
     }
 
+    *loop() {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        let loop: Loop = this;
+        do  { yield loop }
+        while ( ( loop = loop.next ) != this );
+    }
+
     // #endregion
 
 }
+
+export default Loop

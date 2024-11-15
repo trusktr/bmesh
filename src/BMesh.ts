@@ -8,7 +8,7 @@ import CoreOps  from './ops/CoreOps';
 import QueryOps from './ops/QueryOps';
 // #endregion
 
-export default class BMesh{
+export class BMesh{
 
     // #region MAIN
     vertices : Array<Vertex> = [];
@@ -74,3 +74,5 @@ export default class BMesh{
 
     // #endregion
 }
+
+export default BMesh

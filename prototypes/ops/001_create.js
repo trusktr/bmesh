@@ -2,6 +2,7 @@
 import useThreeWebGL2, { useDarkScene, useVisualDebug } from '../_lib/useThreeWebGL2.js';
 
 import { BMesh } from 'bmesh';
+/** @import { Face, Vertex } from 'bmesh' */
 //#endregion
 
 //#region MAIN
@@ -38,7 +39,7 @@ window.addEventListener( 'load', async _=>{
     // App.createRenderLoop( onPreRender ).start();
 });
 
-function iterVertEdges( v ){
+function iterVertEdges( /**@type {Vertex}*/ v ){
     let iter = v.edge;
     if( !iter ){
         console.log( 'NoStarting Edge' );
@@ -53,7 +54,7 @@ function iterVertEdges( v ){
     }
 }
 
-function drawFace( f ){
+function drawFace( /**@type {Face}*/ f ){
     let iter = f.loop;
     do{
 
@@ -63,8 +64,8 @@ function drawFace( f ){
     } while( ( iter = iter.next ) != f.loop );
 }
 
-function drawFaceIter( f ){
-    for( const l of f.loop.iterNext() ){
+function drawFaceIter( /**@type {Face}*/ f ){
+    for( const l of f.loop.loop() ){
         console.log( l );
         Debug.pnt.add( l.vert.pos, 0x00ff00, 3 );
         Debug.ln.add( l.edge.v1.pos, l.edge.v2.pos, 0x00ffff );

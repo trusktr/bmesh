@@ -1,6 +1,6 @@
 type TVec3 = Array< number >;
 
-export default class vec3{
+export class vec3{
 
     // #region GETTERS
 
@@ -64,3 +64,5 @@ export default class vec3{
     // #endregion
 
 }
+
+export default vec3

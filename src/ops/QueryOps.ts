@@ -7,7 +7,7 @@ import type Face         from '../ds/Face';
 import vec3              from '../maths/vec3';
 // #endregion
 
-export default class QueryOps{
+export class QueryOps{
 
     // #region EDGES
 
@@ -258,3 +258,5 @@ export default class QueryOps{
     // #endregion
 
 }
+
+export default QueryOps

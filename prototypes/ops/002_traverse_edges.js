@@ -1,9 +1,7 @@
 //#region IMPORTS
 import useThreeWebGL2, { useDarkScene, useVisualDebug } from '../_lib/useThreeWebGL2.js';
 
-import { BMesh } from 'bmesh';
-// import vec3 from '../../src/maths/vec3.ts';
-import vec3 from 'bmesh/src/maths/vec3.js';
+import { BMesh, vec3 } from 'bmesh';
 //#endregion
 
 //#region MAIN
