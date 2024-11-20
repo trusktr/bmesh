@@ -14,8 +14,8 @@ export class QueryOps{
     // BM_edge_exists : https://github.com/blender/blender/blob/48e60dcbffd86f3778ce75ab67f95461ffbe319c/source/blender/bmesh/intern/bmesh_query.cc#L1562
     static edgeExists( v1: Vertex, v2: Vertex ): Edge | null{
         if( v1.edge !== null && v2.edge !== null ){
-            let iter1: any = v1.edge;
-            let iter2: any = v2.edge;
+            let iter1 = v1.edge;
+            let iter2 = v2.edge;
 
             do{
                 if( iter1.vertExists( v2 )  ) return iter1;

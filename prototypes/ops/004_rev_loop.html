@@ -56,8 +56,8 @@ window.addEventListener( 'load', async _=>{
 
 //     const mesh = Ref.mesh;
 
-//     for( const v of mesh.vertices ) Debug.pnt.add( v.pos, 0x00ff00, 3 );
-//     for( const e of mesh.edges )    Debug.ln.add( e.v1.pos, e.v2.pos, 0x00ffff );
+//     for( const v of mesh.vertices ) Debug.pnt.addPoint( v.pos, 0x00ff00, 3 );
+//     for( const e of mesh.edges )    Debug.ln.addPoint( e.v1.pos, e.v2.pos, 0x00ffff );
 // }
 
 function renderFace( f ){
@@ -65,8 +65,8 @@ function renderFace( f ){
     // Debug.ln.reset();
 
     for( const l of f.loop.iterNext() ){
-        Debug.pnt.add( l.vert.pos, 0x00ff00, 3 );
-        Debug.ln.add( l.edge.v1.pos, l.edge.v2.pos, 0x00ffff );
+        Debug.pnt.addPoint( l.vert.pos, 0x00ff00, 3 );
+        Debug.ln.addPoint( l.edge.v1.pos, l.edge.v2.pos, 0x00ffff );
     }
 
     renderFaceNorm( f );
@@ -98,8 +98,8 @@ function renderFaceNorm( f ){
         z + f.norm[2] * s,
     ];
 
-    Debug.pnt.add( a, 0xffff00, 3 );
-    Debug.ln.add( a, b, 0xffff00 );
+    Debug.pnt.addPoint( a, 0xffff00, 3 );
+    Debug.ln.addPoint( a, b, 0xffff00 );
 }
 
 function renderDir( f ){
@@ -120,11 +120,11 @@ function renderDir( f ){
         vec3.scaleThenAdd( dir, len, a, a );
         vec3.scaleThenAdd( dir, -len, b, b );
 
-        Debug.pnt.add( a, 0xFFAD00, 3 );
-        Debug.ln.add( a, b, 0xFFAD00 );
+        Debug.pnt.addPoint( a, 0xFFAD00, 3 );
+        Debug.ln.addPoint( a, b, 0xFFAD00 );
         
-        // Debug.pnt.add( l.vert.pos, 0x00ff00, 3 );
-        // Debug.ln.add( l.edge.v1.pos, l.edge.v2.pos, 0x00ffff );
+        // Debug.pnt.addPoint( l.vert.pos, 0x00ff00, 3 );
+        // Debug.ln.addPoint( l.edge.v1.pos, l.edge.v2.pos, 0x00ffff );
     }
 }
 

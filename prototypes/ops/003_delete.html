@@ -69,8 +69,8 @@ function render(){
 
     const mesh = Ref.mesh;
 
-    for( const v of mesh.vertices ) Debug.pnt.add( v.pos, 0x00ff00, 3 );
-    for( const e of mesh.edges )    Debug.ln.add( e.v1.pos, e.v2.pos, 0x00ffff );
+    for( const v of mesh.vertices ) Debug.pnt.addPoint( v.pos, 0x00ff00, 3 );
+    for( const e of mesh.edges )    Debug.ln.addPoint( e.v1.pos, e.v2.pos, 0x00ffff );
 }
 
 function renderFaces(){
@@ -79,8 +79,8 @@ function renderFaces(){
 
     for( const f of Ref.mesh.faces ){
         for( const l of f.loop.iterNext() ){
-            Debug.pnt.add( l.vert.pos, 0x00ff00, 3 );
-            Debug.ln.add( l.edge.v1.pos, l.edge.v2.pos, 0x00ffff );
+            Debug.pnt.addPoint( l.vert.pos, 0x00ff00, 3 );
+            Debug.ln.addPoint( l.edge.v1.pos, l.edge.v2.pos, 0x00ffff );
         }
     }
 }
@@ -102,7 +102,7 @@ function renderFace(){
     y /= cnt;
     z /= cnt;
 
-    Debug.pnt.add( [x,y,z], 0xffff00, 5, 2 );
+    Debug.pnt.addPoint( [x,y,z], 0xffff00, 5, 2 );
 }
 
 // function onPreRender( dt, et ){}

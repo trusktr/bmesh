@@ -30,8 +30,8 @@ window.addEventListener( 'load', async _=>{
     // drawFace( mesh.faces[0] );
     drawFaceIter( mesh.faces[0] );
 
-    // for( const v of mesh.vertices ) Debug.pnt.add( v.pos, 0x00ff00, 3 );
-    // for( const e of mesh.edges )    Debug.ln.add( e.v1.pos, e.v2.pos, 0x00ffff );
+    // for( const v of mesh.vertices ) Debug.pnt.addPoint( v.pos, 0x00ff00, 3 );
+    // for( const e of mesh.edges )    Debug.ln.addPoint( e.v1.pos, e.v2.pos, 0x00ffff );
     // iterVertEdges( v1 );
     
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -58,8 +58,8 @@ function drawFace( /**@type {Face}*/ f ){
     let iter = f.loop;
     do{
 
-        Debug.pnt.add( iter.vert.pos, 0x00ff00, 3 );
-        Debug.ln.add( iter.edge.v1.pos, iter.edge.v2.pos, 0x00ffff );
+        Debug.pnt.addPoint( iter.vert.pos, 0x00ff00, 3 );
+        Debug.ln.addPoint( iter.edge.v1.pos, iter.edge.v2.pos, 0x00ffff );
         
     } while( ( iter = iter.next ) != f.loop );
 }
@@ -67,8 +67,8 @@ function drawFace( /**@type {Face}*/ f ){
 function drawFaceIter( /**@type {Face}*/ f ){
     for( const l of f.loop.loop() ){
         console.log( l );
-        Debug.pnt.add( l.vert.pos, 0x00ff00, 3 );
-        Debug.ln.add( l.edge.v1.pos, l.edge.v2.pos, 0x00ffff );
+        Debug.pnt.addPoint( l.vert.pos, 0x00ff00, 3 );
+        Debug.ln.addPoint( l.edge.v1.pos, l.edge.v2.pos, 0x00ffff );
     }
 }
 

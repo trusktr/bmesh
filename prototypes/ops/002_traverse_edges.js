@@ -46,8 +46,8 @@ window.addEventListener( 'load', async _=>{
 
     // drawFace( mesh.faces[0] );
 
-    // for( const v of mesh.vertices ) Debug.pnt.add( v.pos, 0x00ff00, 3 );
-    // for( const e of mesh.edges )    Debug.ln.add( e.v1.pos, e.v2.pos, 0x00ffff );
+    // for( const v of mesh.vertices ) Debug.pnt.addPoint( v.pos, 0x00ff00, 3 );
+    // for( const e of mesh.edges )    Debug.ln.addPoint( e.v1.pos, e.v2.pos, 0x00ffff );
     // iterVertEdges( v1 );
     
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -70,8 +70,8 @@ function render(){
 
     const mesh = Ref.mesh;
 
-    for( const v of mesh.vertices ) Debug.pnt.add( v.pos, 0x00ff00, 3 );
-    for( const e of mesh.edges )    Debug.ln.add( e.v1.pos, e.v2.pos, 0x00ffff );
+    for( const v of mesh.vertices ) Debug.pnt.addPoint( v.pos, 0x00ff00, 3 );
+    for( const e of mesh.edges )    Debug.ln.addPoint( e.v1.pos, e.v2.pos, 0x00ffff );
 
     const loop = Ref.loop;
 
@@ -85,8 +85,8 @@ function render(){
     vec3.add( a, n, a );
     vec3.add( b, n, b );
 
-    Debug.pnt.add( a, 0xffff00, 4 );
-    Debug.ln.add( a, b, 0xffff00 );
+    Debug.pnt.addPoint( a, 0xffff00, 4 );
+    Debug.ln.addPoint( a, b, 0xffff00 );
     renderFace();
 }
 
@@ -107,7 +107,7 @@ function renderFace(){
     y /= cnt;
     z /= cnt;
 
-    Debug.pnt.add( [x,y,z], 0xffff00, 5, 2 );
+    Debug.pnt.addPoint( [x,y,z], 0xffff00, 5, 2 );
 }
 
 function loopNext(){

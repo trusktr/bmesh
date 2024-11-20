@@ -1,21 +1,30 @@
 import * as THREE           from 'three';
 
-class ShapePointsMesh extends THREE.Points{
-    _defaultShape   = 1;
-    _defaultSize    = 6;
-    _defaultColor   = 0x00ff00;
-    _cnt            = 0;
-    _verts          = [];
-    _color          = [];
-    _config         = [];
-    _dirty          = false;
+export class ShapePointsMesh extends THREE.Points{
+    _defaultShape       = 1;
+    _defaultSize        = 6;
+    _defaultColor       = 0x00ff00;
+    _defaultPerspective = false;
+    _cnt                = 0;
 
-    constructor( initSize = 20 ){
+    // gl attributes
+    _verts              = /** @type {number[]} */([]);
+    _color              = /** @type {number[]} */([]);
+    _config             = /** @type {number[]} */([]);
+    _perspective        = /** @type {number[]} */([]);
+
+    _dirty              = false;
+
+    constructor( 
+        /** Do not add more points than maxSize (resize not implemented yet). */
+        initSize = 20
+    ){
         super( 
             _newShapePointsMeshGeometry( 
                 new Float32Array( initSize * 3 ), 
                 new Float32Array( initSize * 3 ),
                 new Float32Array( initSize * 2 ),
+                new Int32Array( initSize * 1 ),
                 false
             ),
             newShapePointsMeshMaterial() //new THREE.PointsMaterial( { color: 0xffffff, size:8, sizeAttenuation:false } )
@@ -26,18 +35,20 @@ class ShapePointsMesh extends THREE.Points{
     }
 
     reset(){
-		this._cnt           = 0;
-		this._verts.length  = 0;
-        this._color.length  = 0;
-        this._config.length = 0;
+		this._cnt                = 0;
+		this._verts.length       = 0;
+        this._color.length       = 0;
+        this._config.length      = 0;
+        this._perspective.length = 0;
         this.geometry.setDrawRange( 0, 0 );
 		return this;
     }
 
-    add( pos, color = this._defaultColor, size = this._defaultSize, shape = this._defaultShape ){
+    addPoint( pos, color = this._defaultColor, size = this._defaultSize, shape = this._defaultShape, perspective = this._defaultPerspective ){
         this._verts.push( pos[0], pos[1], pos[2] );
         this._color.push( ...glColor( color ) );
         this._config.push( size, shape );
+        this._perspective.push( +perspective );
         this._cnt++;
         this._dirty = true;
         return this;
@@ -72,35 +83,51 @@ class ShapePointsMesh extends THREE.Points{
         ];
     }
 
+    setPerspectiveAt( /**@type {number}*/ idx, /**@type {boolean}*/ val){
+        this._perspective[ idx ] = +val;
+    }
+
     _updateGeometry(){
         const geo       = this.geometry;
         const bVerts    = geo.attributes.position;
         const bColor    = geo.attributes.color;     //this.geometry.index;
         const bConfig   = geo.attributes.config;
+        const bPerspective   = geo.attributes.perspective;
+        console.log('update geometry', bConfig, bPerspective);
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         if( this._verts.length  > bVerts.array.length || 
             this._color.length  > bColor.array.length ||
-            this._config.length > bConfig.array.length
+            this._config.length > bConfig.array.length ||
+            this._perspective.length > bPerspective.array.length
         ){
             if( this.geometry ) this.geometry.dispose();
-            this.geometry   = _newShapePointsMeshGeometry( this._verts, this._color, this._config );
+            this.geometry = _newShapePointsMeshGeometry(
+              new Float32Array(this._verts),
+              new Float32Array(this._color),
+              new Float32Array(this._config),
+              new Int32Array(this._perspective)
+            )
             this._dirty     = false;
             return;
         }
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         bVerts.array.set( this._verts );
-        bVerts.count       = this._verts.length / 3;
+        bVerts.count       = this._verts.length / 3; // FIXME count is readonly
         bVerts.needsUpdate = true;
 
         bColor.array.set( this._color );
-        bColor.count       = this._color.length / 3;
+        bVerts.count       = this._verts.length / 3; // FIXME count is readonly
         bColor.needsUpdate = true;
 
         bConfig.array.set( this._config );
-        bConfig.count       = this._config.length / 2;
+        bVerts.count        = this._verts.length / 3; // FIXME count is readonly
         bConfig.needsUpdate = true;
+
+        bPerspective.array.set( this._perspective );
+        bPerspective.count       = this._perspective.length / 1; // FIXME count is readonly
+        bPerspective.needsUpdate = true;
 
         geo.setDrawRange( 0, bVerts.count );
         geo.computeBoundingBox();
@@ -111,7 +138,13 @@ class ShapePointsMesh extends THREE.Points{
 }
 
 //#region SUPPORT 
-function _newShapePointsMeshGeometry( aVerts, aColor, aConfig, doCompute=true ){
+function _newShapePointsMeshGeometry( 
+    /** @type {Float32Array} */ aVerts,
+    /** @type {Float32Array} */ aColor,
+    /** @type {Float32Array} */ aConfig,
+    /** @type {Int32Array} */ aPerspective,
+    computeBounds = true
+){
     //if( !( aVerts instanceof Float32Array) ) aVerts = new Float32Array( aVerts );
     //if( !( aColor instanceof Float32Array) ) aColor = new Float32Array( aColor );
 
@@ -119,17 +152,20 @@ function _newShapePointsMeshGeometry( aVerts, aColor, aConfig, doCompute=true ){
     const bVerts    = new THREE.Float32BufferAttribute( aVerts, 3 );
     const bColor    = new THREE.Float32BufferAttribute( aColor, 3 );
     const bConfig   = new THREE.Float32BufferAttribute( aConfig, 2 );
+    const bPerspective   = new THREE.Int32BufferAttribute( aPerspective, 1 );
     bVerts.setUsage(  THREE.DynamicDrawUsage );
     bColor.setUsage(  THREE.DynamicDrawUsage );
     bConfig.setUsage( THREE.DynamicDrawUsage );
+    bPerspective.setUsage( THREE.DynamicDrawUsage );
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     const geo = new THREE.BufferGeometry();
     geo.setAttribute( 'position', bVerts );
     geo.setAttribute( 'color', bColor );
     geo.setAttribute( 'config', bConfig );
+    geo.setAttribute( 'perspective', bPerspective );
 
-    if( doCompute ){
+    if( computeBounds ){
         geo.computeBoundingSphere();
         geo.computeBoundingBox();
     }
@@ -153,124 +189,129 @@ function glColor( hex, out = null ){
 function newShapePointsMeshMaterial(){
 
     return new THREE.RawShaderMaterial({
-    depthTest       : false,
-    transparent 	: true, 
-    uniforms        : { u_scale:{ value : 20.0 } },
-    vertexShader    : `#version 300 es
-    in	vec3	position;
-    in	vec3	color;
-    in	vec2	config;
-    
-    uniform 	mat4	modelViewMatrix;
-    uniform 	mat4	projectionMatrix;
-    uniform 	float	u_scale;
+        depthTest       : false,
+        transparent 	: true, 
+        uniforms        : { u_scale:{ value : 20.0 } },
+        vertexShader    : /*glsl*/`#version 300 es
+            in vec3 position;
+            in vec3 color;
+            in vec2 config;
+            in int perspective;
+            
+            uniform 	mat4	modelViewMatrix;
+            uniform 	mat4	projectionMatrix;
+            uniform 	float	u_scale;
 
-    out 	    vec3	fragColor;
-    flat out    int     fragShape;
-    
-    void main(){
-        vec4 wPos 	        = modelViewMatrix * vec4( position.xyz, 1.0 );
-        
-        fragColor			= color;
-        fragShape			= int( config.y );
+            out 	    vec3	fragColor;
+            flat out    int     fragShape;
+            
+            void main(){
+                vec4 wPos 	        = modelViewMatrix * vec4( position.xyz, 1.0 );
+                
+                fragColor			= color;
+                fragShape			= int( config.y );
 
-        gl_Position			= projectionMatrix * wPos;
-        gl_PointSize		= config.x * ( u_scale / -wPos.z );
+                gl_Position			= projectionMatrix * wPos;
 
-        // Get pnt to be World Space Size
-        //gl_PointSize = view_port_size.y * projectionMatrix[1][5] * 1.0 / gl_Position.w;
-        //gl_PointSize = view_port_size.y * projectionMatrix[1][1] * 1.0 / gl_Position.w;
-    }`,
-    fragmentShader  : `#version 300 es
-    precision mediump float;
+                gl_PointSize        = bool(perspective)
+                    // world space size
+                    ? config.x * ( u_scale / -wPos.z )
+                    // screen pixel size
+                    : config.x;
+            }
+        `,
+        fragmentShader  : /*glsl*/`#version 300 es
+            precision mediump float;
 
-    #define PI	3.14159265359
-    #define PI2	6.28318530718
+            #define PI	3.14159265359
+            #define PI2	6.28318530718
 
-    in   vec3       fragColor;
-    flat in int     fragShape;
-    out  vec4		outColor;
+            in   vec3       fragColor;
+            flat in int     fragShape;
+            out  vec4		outColor;
 
-    float circle(){ 
-        vec2 coord      = gl_PointCoord * 2.0 - 1.0; // v_uv * 2.0 - 1.0;
-        float radius    = dot( coord, coord );
-        float dxdy      = fwidth( radius );
-        return smoothstep( 0.90 + dxdy, 0.90 - dxdy, radius );
-    }
-    
-    float ring( float inner ){ 
-        vec2 coord      = gl_PointCoord * 2.0 - 1.0;
-        float radius    = dot( coord, coord );
-        float dxdy      = fwidth( radius );
-        return  smoothstep( inner - dxdy, inner + dxdy, radius ) - 
-                smoothstep( 1.0 - dxdy, 1.0 + dxdy, radius );
-    }
-    
-    float diamond(){
-        // http://www.numb3r23.net/2015/08/17/using-fwidth-for-distance-based-anti-aliasing/
-        const float radius = 0.5;
-    
-        float dst   = dot( abs(gl_PointCoord-vec2(0.5)), vec2(1.0) );
-        float aaf   = fwidth( dst );
-        return 1.0 - smoothstep( radius - aaf, radius, dst );
-    }
-    
-    float poly( int sides, float offset, float scale ){
-        // https://thebookofshaders.com/07/
-        vec2 coord = gl_PointCoord * 2.0 - 1.0;
-        
-        coord.y += offset;
-        coord *= scale;
-    
-        float a = atan( coord.x, coord.y ) + PI; 	// Angle of Pixel
-        float r = PI2 / float( sides ); 			// Radius of Pixel
-        float d = cos( floor( 0.5 + a / r ) * r-a ) * length( coord );
-        float f = fwidth( d );
-        return smoothstep( 0.5, 0.5 - f, d );
-    }
+            float circle(){ 
+                vec2 coord      = gl_PointCoord * 2.0 - 1.0; // v_uv * 2.0 - 1.0;
+                float radius    = dot( coord, coord );
+                float dxdy      = fwidth( radius );
+                return smoothstep( 0.90 + dxdy, 0.90 - dxdy, radius );
+            }
+            
+            float ring( float inner ){ 
+                vec2 coord      = gl_PointCoord * 2.0 - 1.0;
+                float radius    = dot( coord, coord );
+                float dxdy      = fwidth( radius );
+                return  smoothstep( inner - dxdy, inner + dxdy, radius ) - 
+                        smoothstep( 1.0 - dxdy, 1.0 + dxdy, radius );
+            }
+            
+            float diamond(){
+                // http://www.numb3r23.net/2015/08/17/using-fwidth-for-distance-based-anti-aliasing/
+                const float radius = 0.5;
+            
+                float dst   = dot( abs(gl_PointCoord-vec2(0.5)), vec2(1.0) );
+                float aaf   = fwidth( dst );
+                return 1.0 - smoothstep( radius - aaf, radius, dst );
+            }
+            
+            float poly( int sides, float offset, float scale ){
+                // https://thebookofshaders.com/07/
+                vec2 coord = gl_PointCoord * 2.0 - 1.0;
+                
+                coord.y += offset;
+                coord *= scale;
+            
+                float a = atan( coord.x, coord.y ) + PI; 	// Angle of Pixel
+                float r = PI2 / float( sides ); 			// Radius of Pixel
+                float d = cos( floor( 0.5 + a / r ) * r-a ) * length( coord );
+                float f = fwidth( d );
+                return smoothstep( 0.5, 0.5 - f, d );
+            }
 
-    // signed distance to a n-star polygon with external angle en
-    float sdStar( float r, int n, float m ){ // m=[2,n]
-        vec2 p = vec2( gl_PointCoord.x, 1.0 - gl_PointCoord.y ) * 2.0 - 1.0;
+            // signed distance to a n-star polygon with external angle en
+            float sdStar( float r, int n, float m ){ // m=[2,n]
+                vec2 p = vec2( gl_PointCoord.x, 1.0 - gl_PointCoord.y ) * 2.0 - 1.0;
 
-        // these 4 lines can be precomputed for a given shape
-        float an = 3.141593/float(n);
-        float en = 3.141593/m;
-        vec2  acs = vec2(cos(an),sin(an));
-        vec2  ecs = vec2(cos(en),sin(en)); // ecs=vec2(0,1) and simplify, for regular polygon,
-    
-        // reduce to first sector
-        float bn = mod(atan(p.x,p.y),2.0*an) - an;
-        p = length(p)*vec2(cos(bn),abs(sin(bn)));
-    
-        // line sdf
-        p -= r*acs;
-        p += ecs*clamp( -dot(p,ecs), 0.0, r*acs.y/ecs.y);
+                // these 4 lines can be precomputed for a given shape
+                float an = 3.141593/float(n);
+                float en = 3.141593/m;
+                vec2  acs = vec2(cos(an),sin(an));
+                vec2  ecs = vec2(cos(en),sin(en)); // ecs=vec2(0,1) and simplify, for regular polygon,
+            
+                // reduce to first sector
+                float bn = mod(atan(p.x,p.y),2.0*an) - an;
+                p = length(p)*vec2(cos(bn),abs(sin(bn)));
+            
+                // line sdf
+                p -= r*acs;
+                p += ecs*clamp( -dot(p,ecs), 0.0, r*acs.y/ecs.y);
 
-        float dist = length(p)*sign(p.x);
-        float f = fwidth( dist );
+                float dist = length(p)*sign(p.x);
+                float f = fwidth( dist );
 
-        return smoothstep( 0.0, 0.0 - f, dist );
-    }
-    
+                return smoothstep( 0.0, 0.0 - f, dist );
+            }
+            
 
-    void main(){
-        float alpha = 1.0;
+            void main(){
+                float alpha = 1.0;
 
-        if( fragShape == 1 ) alpha = circle();
-        if( fragShape == 2 ) alpha = diamond();
-        if( fragShape == 3 ) alpha = poly( 3, 0.2, 1.0 );	// Triangle
-        if( fragShape == 4 ) alpha = poly( 5, 0.0, 0.65 );  // Pentagram
-        if( fragShape == 5 ) alpha = poly( 6, 0.0, 0.65 );	// Hexagon
-        if( fragShape == 6 ) alpha = ring( 0.2 );
-        if( fragShape == 7 ) alpha = ring( 0.7 );
-        if( fragShape == 8 ) alpha = sdStar( 1.0, 3, 2.3 );
-        if( fragShape == 9 ) alpha = sdStar( 1.0, 6, 2.5 );
-        if( fragShape == 10 ) alpha = sdStar( 1.0, 4, 2.4 );
-        if( fragShape == 11 ) alpha = sdStar( 1.0, 5, 2.8 );
+                if( fragShape == 1 ) alpha = circle();
+                if( fragShape == 2 ) alpha = diamond();
+                if( fragShape == 3 ) alpha = poly( 3, 0.2, 1.0 );	// Triangle
+                if( fragShape == 4 ) alpha = poly( 5, 0.0, 0.65 );  // Pentagram
+                if( fragShape == 5 ) alpha = poly( 6, 0.0, 0.65 );	// Hexagon
+                if( fragShape == 6 ) alpha = ring( 0.2 );
+                if( fragShape == 7 ) alpha = ring( 0.7 );
+                if( fragShape == 8 ) alpha = sdStar( 1.0, 3, 2.3 );
+                if( fragShape == 9 ) alpha = sdStar( 1.0, 6, 2.5 );
+                if( fragShape == 10 ) alpha = sdStar( 1.0, 4, 2.4 );
+                if( fragShape == 11 ) alpha = sdStar( 1.0, 5, 2.8 );
 
-        outColor = vec4( fragColor, alpha );
-    }`});
+                outColor = vec4( fragColor, alpha );
+            }
+        `,
+    });
 }
 
 //#endregion

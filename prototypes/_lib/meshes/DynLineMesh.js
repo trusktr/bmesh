@@ -1,6 +1,6 @@
 import * as THREE           from 'three';
 
-class DynLineMesh extends THREE.LineSegments{
+export class DynLineMesh extends THREE.LineSegments{
     _defaultColor   = 0x00ff00;
     _cnt            = 0;
     _verts          = [];
@@ -32,7 +32,7 @@ class DynLineMesh extends THREE.LineSegments{
 		return this;
     }
 
-    add( p0, p1, color0=this._defaultColor, color1=null, isDash=false ){
+    addPoint( p0, p1, color0=this._defaultColor, color1=null, isDash=false ){
         this._verts.push( p0[0], p0[1], p0[2], p1[0], p1[1], p1[2] );
         this._color.push( ...glColor( color0 ), ...glColor( (color1 != null) ? color1:color0 ) );
 
@@ -56,18 +56,18 @@ class DynLineMesh extends THREE.LineSegments{
         let x1 = v0[0], y1 = v0[1], z1 = v0[2], 
             x2 = v1[0], y2 = v1[1], z2 = v1[2];
 
-        this.add( [x1,y1,z1], [x1,y1,z2], col, null, is_dash ); // Bottom
-        this.add( [x1,y1,z2], [x2,y1,z2], col, null, is_dash );
-        this.add( [x2,y1,z2], [x2,y1,z1], col, null, is_dash );
-        this.add( [x2,y1,z1], [x1,y1,z1], col, null, is_dash );
-        this.add( [x1,y2,z1], [x1,y2,z2], col, null, is_dash ); // Top
-        this.add( [x1,y2,z2], [x2,y2,z2], col, null, is_dash );
-        this.add( [x2,y2,z2], [x2,y2,z1], col, null, is_dash );
-        this.add( [x2,y2,z1], [x1,y2,z1], col, null, is_dash );
-        this.add( [x1,y1,z1], [x1,y2,z1], col, null, is_dash ); // Sides
-        this.add( [x1,y1,z2], [x1,y2,z2], col, null, is_dash );
-        this.add( [x2,y1,z2], [x2,y2,z2], col, null, is_dash );
-        this.add( [x2,y1,z1], [x2,y2,z1], col, null, is_dash );
+        this.addPoint( [x1,y1,z1], [x1,y1,z2], col, null, is_dash ); // Bottom
+        this.addPoint( [x1,y1,z2], [x2,y1,z2], col, null, is_dash );
+        this.addPoint( [x2,y1,z2], [x2,y1,z1], col, null, is_dash );
+        this.addPoint( [x2,y1,z1], [x1,y1,z1], col, null, is_dash );
+        this.addPoint( [x1,y2,z1], [x1,y2,z2], col, null, is_dash ); // Top
+        this.addPoint( [x1,y2,z2], [x2,y2,z2], col, null, is_dash );
+        this.addPoint( [x2,y2,z2], [x2,y2,z1], col, null, is_dash );
+        this.addPoint( [x2,y2,z1], [x1,y2,z1], col, null, is_dash );
+        this.addPoint( [x1,y1,z1], [x1,y2,z1], col, null, is_dash ); // Sides
+        this.addPoint( [x1,y1,z2], [x1,y2,z2], col, null, is_dash );
+        this.addPoint( [x2,y1,z2], [x2,y2,z2], col, null, is_dash );
+        this.addPoint( [x2,y1,z1], [x2,y2,z1], col, null, is_dash );
         return this;
     }
 

@@ -22,8 +22,8 @@ window.addEventListener( 'load', async _=>{
     App.scene.add( ( Ref.cube  = facedCube() ) );
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    Debug.pnt.add( [0,1,0], 0x00ff00, 7, 6 );
-    Debug.ln.add( [0,1,0], [0,2,0], 0x00ff00, 0x00ffff );
+    Debug.pnt.addPoint( [0,1,0], 0x00ff00, 7, 6 );
+    Debug.ln.addPoint( [0,1,0], [0,2,0], 0x00ff00, 0x00ffff );
     
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     App.renderLoop();
