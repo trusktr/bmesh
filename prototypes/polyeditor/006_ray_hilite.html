@@ -156,7 +156,7 @@ class ImageCanvas{
             dir = [ -dir[0], dir[1], dir[2] ];  // X Mirror
             
             Debug.ln.reset();
-            Debug.ln.add( [0,0,0], dir, 0xffff00 );
+            Debug.ln.addPoint( [0,0,0], dir, 0xffff00 );
             console.log( 'xx', xx, yy, zz, dd );
             
             Ref.cylinder.quaternion.fromArray( new Quat().fromLook( dir ) );

@@ -61,6 +61,27 @@ export class vec3{
         return out;
     }
 
+    static avg(...vecs: TVec3[]): TVec3 {
+        let x   = 0;
+        let y   = 0;
+        let z   = 0;
+        let cnt = 0;
+
+        // "loop D loop jigga whaaaaa"
+        for (const v of vecs) {
+            x += v[0];
+            y += v[1];
+            z += v[2];
+            cnt++;
+        }
+
+        x /= cnt;
+        y /= cnt;
+        z /= cnt;
+
+        return [x, y, z]
+    }
+
     // #endregion
 
 }

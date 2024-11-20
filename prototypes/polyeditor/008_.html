@@ -76,9 +76,9 @@ function debugPolygon(){
     for( let i=0; i < pnts.length; i++ ){
         let ii = ( i+1 ) % pnts.length;
 
-        Debug.ln.add( [0,0,0], pnts[i], 0x00ffff );
-        Debug.ln.add( pnts[i], pnts[ii], 0x00ffff );
-        Debug.pnt.add( pnts[i], 0xffff00, 3 );
+        Debug.ln.addPoint( [0,0,0], pnts[i], 0x00ffff );
+        Debug.ln.addPoint( pnts[i], pnts[ii], 0x00ffff );
+        Debug.pnt.addPoint( pnts[i], 0xffff00, 3 );
     }
 
 }
@@ -428,7 +428,7 @@ class ImageCanvas{
             dir = [ -dir[2], dir[1], dir[0] ];  // -zyx rot y+90
             dir = [ -dir[0], dir[1], dir[2] ];  // X Mirror
             
-            Debug.ln.add( [0,0,0], dir, 0xffff00 );
+            Debug.ln.addPoint( [0,0,0], dir, 0xffff00 );
             console.log( 'xx', xx, yy, zz, dd );
         });
     }
@@ -451,7 +451,7 @@ class ImageCanvas{
         dir = [ -dir[2], dir[1], dir[0] ];  // -zyx rot y+90
         dir = [ -dir[0], dir[1], dir[2] ];  // X Mirror
         
-        // Debug.ln.add( [0,0,0], dir, 0xffff00 );
+        // Debug.ln.addPoint( [0,0,0], dir, 0xffff00 );
         // console.log( 'xx', xx, yy, zz, dd );
 
         return dir;

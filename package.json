@@ -3,6 +3,7 @@
     "version": "0.0.1",
     "author": "Pedro Sousa ( Vor @ SketchPunk Labs )",
     "description": "",
+    "type": "module",
     "keywords": [
         "mesh editing",
         "threejs",
@@ -41,11 +42,13 @@
         "lint": "eslint . --ext .ts"
     },
     "devDependencies": {
+        "@types/three": "^0.148.0",
         "@typescript-eslint/eslint-plugin": "^6.8.0",
         "@typescript-eslint/parser": "^6.8.0",
         "eslint": "^8.51.0",
-        "typescript": "^5.2.2",
+        "prettier": "^3.3.3",
         "three": "^0.148.0",
+        "typescript": "^5.2.2",
         "vite": "^5.4.11",
         "vite-plugin-list-directory-contents": "^1.4.5"
     }

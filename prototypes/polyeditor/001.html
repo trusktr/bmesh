@@ -90,8 +90,8 @@ class Polygon{
         let i, ii;
         for( let i=0; i < this.points.length; i++ ){
             ii = ( i+1 ) % this.points.length;
-            Debug.ln.add( this.points[i], this.points[ii], this.color );
-            Debug.pnt.add( this.points[i], ( i==Ref.idx) ?0xfffffff:this.color, 3 );
+            Debug.ln.addPoint( this.points[i], this.points[ii], this.color );
+            Debug.pnt.addPoint( this.points[i], ( i==Ref.idx) ?0xfffffff:this.color, 3 );
         }
     }
 }
@@ -148,18 +148,18 @@ class PolygonEditingMode{
         let i, ii; 
         for( let i=0; i < poly.points.length; i++ ){
             ii = ( i+1 ) % poly.points.length;
-            this.ln.add( poly.points[i], poly.points[ii], poly.color );
+            this.ln.addPoint( poly.points[i], poly.points[ii], poly.color );
 
             if( i !== this.selectedPnt && i !== this.hoverPnt )
-                this.pnt.add( poly.points[i], poly.color, 3 );
+                this.pnt.addPoint( poly.points[i], poly.color, 3 );
             else
-                this.pnt.add( poly.points[i], 0xffffff, 5, 2 );
+                this.pnt.addPoint( poly.points[i], 0xffffff, 5, 2 );
         }
 
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         switch( this.opsMode ){
             case 1:
-                if( this.opsData ) this.pnt.add( this.opsData[1], 0xffffff, 5, 6 );
+                if( this.opsData ) this.pnt.addPoint( this.opsData[1], 0xffffff, 5, 6 );
                 break;
         }
     }
@@ -243,7 +243,7 @@ class PolygonEditingMode{
 
         // if( hit ){
         //     Debug.pnt.reset();
-        //     Debug.pnt.add( hit, 0xffffff, 4, 0 );
+        //     Debug.pnt.addPoint( hit, 0xffffff, 4, 0 );
         // }
 
         return hit;
@@ -275,7 +275,7 @@ class PolygonEditingMode{
             }
         }
 
-        // if( hitPos ) Debug.pnt.add( hitPos, 0x00ff00, 3 );
+        // if( hitPos ) Debug.pnt.addPoint( hitPos, 0x00ff00, 3 );
         return ( iHit !== -1 )? [iHit,hitPos] : null;
     }
 

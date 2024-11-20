@@ -53,8 +53,8 @@ window.addEventListener( 'load', async _=>{
     // renderFace( f0 );
     // renderFace( f1, true );
     
-    // Debug.pnt.add( va.pos, 0xffff00, 5, 2 );
-    // Debug.pnt.add( vb.pos, 0xff00ff, 5, 2 );
+    // Debug.pnt.addPoint( va.pos, 0xffff00, 5, 2 );
+    // Debug.pnt.addPoint( vb.pos, 0xff00ff, 5, 2 );
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     App.renderLoop();
@@ -67,8 +67,8 @@ function render(){
 
     const mesh = Ref.mesh;
 
-    for( const v of mesh.vertices ) Debug.pnt.add( v.pos, 0x00ff00, 3 );
-    for( const e of mesh.edges )    Debug.ln.add( e.v1.pos, e.v2.pos, 0x00ffff );
+    for( const v of mesh.vertices ) Debug.pnt.addPoint( v.pos, 0x00ff00, 3 );
+    for( const e of mesh.edges )    Debug.ln.addPoint( e.v1.pos, e.v2.pos, 0x00ffff );
 }
 
 function renderFace( f, flip=false ){
@@ -76,8 +76,8 @@ function renderFace( f, flip=false ){
     // Debug.ln.reset();
 
     for( const l of f.loop.iterNext() ){
-        Debug.pnt.add( l.vert.pos, 0x00ff00, 3 );
-        Debug.ln.add( l.edge.v1.pos, l.edge.v2.pos, 0x00ffff );
+        Debug.pnt.addPoint( l.vert.pos, 0x00ff00, 3 );
+        Debug.ln.addPoint( l.edge.v1.pos, l.edge.v2.pos, 0x00ffff );
     }
 
     renderFaceNorm( f );
@@ -109,8 +109,8 @@ function renderFaceNorm( f ){
         z + f.norm[2] * s,
     ];
 
-    Debug.pnt.add( a, 0xffff00, 3 );
-    Debug.ln.add( a, b, 0xffff00 );
+    Debug.pnt.addPoint( a, 0xffff00, 3 );
+    Debug.ln.addPoint( a, b, 0xffff00 );
 }
 
 function renderDir( f, flip=false ){
@@ -137,11 +137,11 @@ function renderDir( f, flip=false ){
         vec3.scaleThenAdd( dir, len, a, a );
         vec3.scaleThenAdd( dir, -len, b, b );
 
-        Debug.pnt.add( a, 0xFFAD00, 3 );
-        Debug.ln.add( a, b, 0xFFAD00 );
+        Debug.pnt.addPoint( a, 0xFFAD00, 3 );
+        Debug.ln.addPoint( a, b, 0xFFAD00 );
         
-        // Debug.pnt.add( l.vert.pos, 0x00ff00, 3 );
-        // Debug.ln.add( l.edge.v1.pos, l.edge.v2.pos, 0x00ffff );
+        // Debug.pnt.addPoint( l.vert.pos, 0x00ff00, 3 );
+        // Debug.ln.addPoint( l.edge.v1.pos, l.edge.v2.pos, 0x00ffff );
     }
 }
 

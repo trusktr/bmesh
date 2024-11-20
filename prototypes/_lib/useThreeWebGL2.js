@@ -17,9 +17,10 @@ App
     .renderLoop();
 */
 
+/** @typedef {ReturnType<typeof useThreeWebGL2>} App */
 
 // #region OPTIONS
-export function useDarkScene( tjs, props={} ){
+export function useDarkScene( /** @type {App} */ tjs, props={} ){
     const pp = Object.assign( { ambient:0x404040, grid:true, }, props );
 
     // Light
@@ -37,15 +38,15 @@ export function useDarkScene( tjs, props={} ){
     return tjs;
 }
 
-export async function useVisualDebug( tjs ){
-    const ary = await Promise.all([
-        import( './meshes/DynLineMesh.js' ),
+export async function useVisualDebug( /** @type {App} */ tjs ){
+    const [{DynLineMesh}, {ShapePointsMesh}] = await Promise.all([
+        import( './meshes/DynLineMesh.js'     ),
         import( './meshes/ShapePointsMesh.js' ),
     ]);
 
     const o = {};
-    tjs.scene.add( ( o.ln  = new ary[ 0 ].default ) );
-    tjs.scene.add( ( o.pnt = new ary[ 1 ].default ) );
+    tjs.scene.add( ( o.ln  = new DynLineMesh     ) );
+    tjs.scene.add( ( o.pnt = new ShapePointsMesh ) );
 
     o.reset = ()=>{
         o.ln.reset();
