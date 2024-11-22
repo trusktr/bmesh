@@ -20,11 +20,31 @@ export class BMesh2 {
 	}
 
 	addFace(face: Face2): void {
+		const err = BMesh2.validateLoop(face)
+		if (err) throw err
 		this.faces.add(face)
 	}
 
 	addLoop(loop: Loop2): void {
 		this.loops.add(loop)
+	}
+
+	// BM_edges_from_verts_ensure
+	edgesFromVerts(...vertices: Vertex2[]): Edge2[] {
+		const edges: Edge2[] = []
+
+		// ensure no duplicate vertices
+		if (vertices.length !== new Set(vertices).size) throw new TypeError('duplicate vertices not allowed')
+
+		console.log('verts:', ...vertices.map(v => v.toArray()))
+		for (const [i, vertex] of vertices.entries()) {
+			const next = vertices[(i + 1) % vertices.length]!
+			console.log('existing edge?', vertex.toArray(), next.toArray(), BMesh2.existingEdge(vertex, next))
+			const edge = BMesh2.existingEdge(vertex, next) ?? new Edge2(this, vertex, next)
+			edges.push(edge)
+		}
+
+		return edges
 	}
 
 	// BM_face_exists
@@ -33,19 +53,10 @@ export class BMesh2 {
 		if (!vertices[0]) return null
 
 		for (const edge of vertices[0].edges) {
-			if (!edge.radials.size) continue
-
-			for (const radial of edge.radials) {
+			for (const [link] of edge.radialLinks()) {
 				// check both directions, as we don't know which order `vertices` is in
-
-				let i = 0
-				let loop
-
-				for ([i, loop] of radial.radial()) if (loop.vertex !== vertices[i]) break
-				if (i + 1 === vertices.length) return radial.face
-
-				for ([i, loop] of radial.radialReverse()) if (loop.vertex !== vertices[i]) break
-				if (i + 1 === vertices.length) return radial.face
+				if (link.loop.verticesMatch(vertices, false)) return link.loop.face
+				if (link.loop.verticesMatchReverse(vertices, false)) return link.loop.face
 			}
 		}
 
@@ -54,41 +65,36 @@ export class BMesh2 {
 
 	// BM_edge_exists
 	/** Returns the edge that exists between two vertices, or null if none. */
-	static existingEdge(start: Vertex2, end: Vertex2): Edge2 | null {
-		if (start === end) throw new TypeError('start and end vertices must be different')
+	static existingEdge(vertA: Vertex2, vertB: Vertex2): Edge2 | null {
+		if (vertA === vertB) throw new TypeError('edge vertices must be different')
 
-		if (!start.edges.size || !end.edges.size) return null
+		if (!vertA.edges.size || !vertB.edges.size) return null
 
 		// Iterate over the smaller set of edges.
-		const edges = start.edges.size < end.edges.size ? start.edges : end.edges
+		const edges = vertA.edges.size < vertB.edges.size ? vertA.edges : vertB.edges
 
-		for (const edge of edges) {
-			if (edge.start === start && edge.end === end) return edge
-			if (edge.start === end && edge.end === start) return edge
-		}
+		for (const edge of edges) if (edge.hasVertex(vertA) && edge.hasVertex(vertB)) return edge
 
 		return null
 	}
 
 	// bmesh_loop_validate
 	/** Returns true if a loop is valid, false otherwise. */
-	validateLoop(face: Face2): boolean {
-		if (!face.loop) return false
+	static validateLoop(face: Face2): Error | null {
+		if (!face.loop) return new Error('face has no loop')
 
-		let loop = face.loop
-		let i = 0
+		const segments = Array.from(face.loop.radial())
+		if (segments.length !== face.length) return new Error('face length does not match loop length')
 
-		for ([i, loop] of face.loop.radial()) if (i + 1 > face.length) return false
-		if (i + 1 !== face.length) return false
-		if (loop.next !== face.loop) return false
+		for (const [loop, i] of segments) {
+			const nextLoop = segments[(i + 1) % face.length]![0]
+			if (nextLoop.prev !== loop) return new Error('reverse loop does not match forward loop')
+			if (loop.face !== nextLoop.face) return new Error('each loop must belong to the same face')
+			if (loop.edge === nextLoop.edge) return new Error('each loop must have a different edge')
+			if (loop.vertex === nextLoop.vertex) return new Error('each loop must have a different vertex')
+		}
 
-		// verify the other direction too
-
-		for ([i, loop] of face.loop.radialReverse()) if (i + 1 > face.length) return false
-		if (i + 1 !== face.length) return false
-		if (loop.prev !== face.loop) return false
-
-		return true
+		return null
 	}
 }
 
@@ -97,10 +103,11 @@ export class Vertex2 {
 	y: number
 	z: number
 
-	/** All edges that start or end at this vertex. */
+	/** All edges that are connected to this vertex. */
 	// Not a circular linked list because order doesn't matter.
 	edges: Set<Edge2> = new Set()
 
+	// BM_vert_create
 	constructor(mesh: BMesh2, x = 0, y = 0, z = 0) {
 		this.x = x
 		this.y = y
@@ -108,38 +115,104 @@ export class Vertex2 {
 
 		mesh.addVertex(this)
 	}
+
+	toArray(): [number, number, number] {
+		return [this.x, this.y, this.z]
+	}
 }
 
+export class RadialLink implements Link {
+	next: RadialLink | null = null
+	prev: RadialLink | null = null
+	readonly loop: Loop2
+
+	constructor(loop: Loop2) {
+		this.loop = loop
+	}
+}
+
+/**
+ * Edges connect two vertices. They are non-directional, meaning an edge with
+ * two vertices for vertexA and vertexB is the same edge if the same two
+ * vertices are assigned to vertexB and vertexA instead.
+ *
+ * Only Loops determine direction for a given loop. Within a particular loop an
+ * some edges may go from vertexA to vertexB, and others from vertexB to
+ * vertexA.
+ */
 export class Edge2 {
-	start: Vertex2
-	end: Vertex2
+	/** The first vertex of this edge (order independent). */
+	vertexA: Vertex2
+	/** The second vertex of this edge (order independent). */
+	vertexB: Vertex2
 
-	/** A set of Loops, one per face that share this same edge. */
-	// Not a circular linked list because order doesn't matter.
-	radials: Set<Loop2> = new Set()
+	/**
+	 * A circular linked list of Loops, one per face that share this edge.
+	 * Unlike with face loops, the order of these loops does not matter.
+	 */
+	radialLink: RadialLink | null = null
 
-	constructor(mesh: BMesh2, start: Vertex2, end: Vertex2, loop: Loop2 | null = null) {
-		this.start = start
-		this.end = end
+	/** Number of faces that share this edge. */
+	faceCount = 0
+
+	// BM_edge_create
+	constructor(mesh: BMesh2, vertA: Vertex2, vertB: Vertex2) {
+		this.vertexA = vertA
+		this.vertexB = vertB
 
 		// avoid duplicate edges
-		const edge = BMesh2.existingEdge(start, end)
+		const edge = BMesh2.existingEdge(vertA, vertB)
 		if (edge) return edge
 
-		start.edges.add(this)
-		end.edges.add(this)
-
-		if (loop) {
-			if (loop.edge) throw new TypeError('loop already has an edge')
-			loop.edge = this
-			this.radials.add(loop)
-		}
+		vertA.edges.add(this)
+		vertB.edges.add(this)
 
 		mesh.addEdge(this)
 	}
 
 	hasVertex(vertex: Vertex2): boolean {
-		return this.start === vertex || this.end === vertex
+		return this.vertexA === vertex || this.vertexB === vertex
+	}
+
+	otherVertex(vertex: Vertex2): Vertex2 {
+		if (this.vertexA === vertex) return this.vertexB
+		if (this.vertexB === vertex) return this.vertexA
+		throw new TypeError('vertex is not part of this edge')
+	}
+
+	addLoop(loop: Loop2): RadialLink {
+		if (loop.radialLink) throw new TypeError('loop already belongs to another edge')
+
+		loop.edge = this
+		const link = (loop.radialLink = new RadialLink(loop))
+
+		if (!this.radialLink) this.radialLink = link.next = link.prev = link
+
+		const last = this.radialLink.prev!
+		last.next = link
+		link.prev = last
+		link.next = this.radialLink
+		this.radialLink.prev = link
+
+		this.faceCount++
+
+		return link
+	}
+
+	/**
+	 * Iterate all the Loops of the current radial loop (the current face, the
+	 * current circular linked list).
+	 */
+	*radialLinks(): Generator<[link: RadialLink, index: number], void, void> {
+		if (!this.radialLink) return
+		// eslint-disable-next-line @typescript-eslint/no-this-alias
+		let link: RadialLink | null = this.radialLink
+		let i = 0
+
+		do {
+			if (!link) throw new InvalidRadialLinkError()
+			yield [link, i++]
+		} while ((link = link.next) != this.radialLink)
 	}
 }
 
@@ -147,39 +220,50 @@ export class Face2 {
 	loop: Loop2
 	length: number
 
+	// BM_face_create
 	constructor(mesh: BMesh2, vertices: Vertex2[], edges: Edge2[]) {
-		Face2.validateInput(vertices, edges)
+		Face2.#validateInput(vertices, edges)
 
 		this.length = vertices.length
-
-		const start = new Loop2(mesh, vertices[0]!, edges[0]!, this)
-		let last = (this.loop = start)
+		this.loop = new Loop2(mesh, this, vertices[0]!, edges[0]!)
 
 		// avoid duplicate faces
 		const face = BMesh2.existingFace(vertices)
 		if (face) return face
 
-		for (const [i, vertex] of vertices.entries()) {
-			if (i === 1) continue
+		// Run this *after* the existingFace check, or else existingFace will detect an invalid Loop.
+		// edges[0]!.addLoop(this.loop)
 
-			const edge = edges[i]!
-			if (!edge.hasVertex(vertex)) throw new TypeError("edge doesn't contain vertex. wrong order?")
-
-			const loop = new Loop2(mesh, vertex, edge, this)
-			edge.radials.add(loop)
-
-			loop.prev = last
-			last.next = loop
-			last = loop
-		}
-
-		start.prev = last
-		last.next = start
+		this.#createLoop(mesh, vertices, edges)
 
 		mesh.addFace(this)
 	}
 
-	static validateInput(vertices: Vertex2[], edges: Edge2[]): void {
+	#createLoop(mesh: BMesh2, vertices: Vertex2[], edges: Edge2[]): void {
+		const start = this.loop
+		let lastLoop = start
+
+		for (const [i, vert] of vertices.entries()) {
+			if (i === 0) continue
+
+			const edge = edges[i]!
+			const nextVert = vertices[(i + 1) % vertices.length]!
+
+			if (!edge.hasVertex(vert)) throw new TypeError("edge doesn't contain vertex. wrong order?")
+			if (!edge.hasVertex(nextVert)) throw new TypeError("edge doesn't contain vertex. wrong order?")
+
+			const loop = new Loop2(mesh, this, vert, edge)
+
+			lastLoop.next = loop
+			loop.prev = lastLoop
+			lastLoop = loop
+		}
+
+		start.prev = lastLoop
+		lastLoop.next = start
+	}
+
+	static #validateInput(vertices: Vertex2[], edges: Edge2[]): void {
 		if (vertices.length < 3) throw new TypeError('a face must have at least 3 vertices')
 		if (vertices.length !== edges.length) throw new TypeError('number of vertices must match number of edges')
 		if (vertices.length !== new Set(vertices).size) throw new TypeError('duplicate vertices not allowed')
@@ -187,18 +271,25 @@ export class Face2 {
 	}
 }
 
-export class Loop2 {
+export interface Link {
+	next: Link | null
+	prev: Link | null
+}
+
+export class Loop2 implements Link {
 	vertex: Vertex2
 	edge: Edge2
 	face: Face2
 	next: Loop2 | null
 	prev: Loop2 | null
+	radialLink: RadialLink
 
+	// BM_loop_create
 	constructor(
 		mesh: BMesh2,
+		face: Face2,
 		vertex: Vertex2,
 		edge: Edge2,
-		face: Face2,
 		next: Loop2 | null = null,
 		prev: Loop2 | null = null,
 	) {
@@ -207,44 +298,55 @@ export class Loop2 {
 		this.face = face
 		this.next = next
 		this.prev = prev
+		this.radialLink = edge.addLoop(this)
 
 		mesh.addLoop(this)
 	}
 
 	/**
-	 * Iterate the Loops of the current radial loop (the current face, the current
-	 * circular linked list).
+	 * Iterate all the Loops of the current radial loop (the current face, the
+	 * current circular linked list).
 	 */
-	*radial(): Generator<[index: number, loop: Loop2], void, void> {
+	*radial(forward = true, check = true): Generator<[loop: Loop2, index: number], void, void> {
 		// eslint-disable-next-line @typescript-eslint/no-this-alias
 		let loop: Loop2 | null = this
 		let i = 0
 
 		do {
 			if (!loop) throw new InvalidLoopError()
-			yield [i++, loop]
-		} while ((loop = loop.next) != this)
+			yield [loop, i++]
+		} while ((loop = forward ? loop.next : loop.prev) != this && (check || (!check && loop)))
 	}
 
 	/**
-	 * Iterate the Loops of the current radial loop (the current face, the current
-	 * circular linked list) in reverse.
+	 * Iterate all the Loops of the current radial loop (the current face, the
+	 * current circular linked list) in reverse.
 	 */
-	*radialReverse(): Generator<[index: number, loop: Loop2], void, void> {
-		// eslint-disable-next-line @typescript-eslint/no-this-alias
-		let loop: Loop2 | null = this
-		let i = 0
+	*radialReverse(check = true): Generator<[loop: Loop2, index: number], void, void> {
+		yield* this.radial(false, check)
+	}
 
-		do {
-			if (!loop) throw new InvalidLoopError()
-			yield [i++, loop]
-		} while ((loop = loop.prev) != this)
+	verticesMatch(vertices: Vertex2[], check = true, forward = true): boolean {
+		let l
+		let i = 0
+		for ([l, i] of this.radial(forward, check)) if (l.vertex !== vertices[i]) return false
+		return i + 1 === vertices.length
+	}
+
+	verticesMatchReverse(vertices: Vertex2[], check = true): boolean {
+		return this.verticesMatch(vertices, check, false)
 	}
 }
 
-class InvalidLoopError extends Error {
+export class InvalidLoopError extends Error {
 	constructor() {
 		super('Invalid loop detected. Loops should form a circular linked list.')
+	}
+}
+
+export class InvalidRadialLinkError extends Error {
+	constructor() {
+		super('Invalid RadialLink loop detected. RadialLinks should form a circular linked list.')
 	}
 }
 
@@ -254,5 +356,6 @@ class InvalidLoopError extends Error {
  *   - exploring blender bmesh source
  *   - started working on bmesh2 in JS
  * - Tuesday: got creation ops basically done, should be enough to create a mesh
- * - Wednesday: create mesh, render it, replicate the edge iteration demo
+ * - Wed: create mesh, render it, replicate the edge iteration demo
+ * - Thurs: finish edge iteration, make radial loop (face) iteration
  */
