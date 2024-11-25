@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title></title></head>
 <style>canvas{ display:block; } body, html { padding:0px; margin:0px; width:100%; height:100%; }</style>
-<body><script type="module">
+<body><script src="../importmap.js"></script><script type="module">
 //#region IMPORTS
 import useThreeWebGL2, { THREE, useDarkScene, useVisualDebug } from '../_lib/useThreeWebGL2.js';
 // import RayCasting, { nearPoint, intersectPlane, nearSegment } from '../_lib/misc/RayCasting.js';
@@ -121,7 +121,7 @@ class Polygon{
         let i, ii;
         for( i=0; i < o.points.length; i++ ){
             ii = ( i+1 ) % o.points.length;
-            mesh.add( o.points[i], o.points[ii], o.color );
+            mesh.addPoint( o.points[i], o.points[ii], o.color );
         }
     }
 
@@ -526,7 +526,7 @@ class DefaultOp extends MachineBase{
     onPointerMove( x, y, e, obj ){}
 }
 
-import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
+import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
 class GizmoOp extends MachineBase{
     // #region MAIN
     name        = 'gizmo';
@@ -676,7 +676,7 @@ class EditPolyOp extends MachineBase{
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         this.pointRender = new ShapePointsMesh();
         this.pointRender.visible = false;
-        this.pointRender.add( [0,0,0], 0x00ff00, 3, 1 );
+        this.pointRender.addPoint( [0,0,0], 0x00ff00, 3, 1 );
         App.scene.add( this.pointRender );
 
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -987,7 +987,7 @@ class AddPolyPointOp extends MachineBase{
         super();
         this.pointRender = new ShapePointsMesh();
         this.pointRender.visible = false;
-        this.pointRender.add( [0,0,0], 0x00ff00, 4, 1 );
+        this.pointRender.addPoint( [0,0,0], 0x00ff00, 4, 1 );
         App.scene.add( this.pointRender );
     }
     // #endregion

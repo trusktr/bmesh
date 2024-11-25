@@ -1,0 +1,13 @@
+body {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	font-family: monospace;
+}
+div {
+	display: flex;
+	flex-direction: column;
+}
+a {
+	text-decoration: none;
+}

@@ -1,4 +1,4 @@
-import useThreeWebGL2, { useDarkScene, useVisualDebug } from '../_lib/useThreeWebGL2.js'
+import useThreeWebGL2, { useDarkScene, useVisualDebug } from '../../../prototypes/_lib/useThreeWebGL2.js'
 
 import { BMesh2, Face2, vec3, Vertex2 } from 'bmesh'
 import { cyan, deeppink, yellow } from '../colors.js'
@@ -43,7 +43,7 @@ console.assert(bmesh.vertices.size === 8)
 // Loops are unique to each face, not shared (4 * 3).
 console.assert(bmesh.loops.size === 12)
 
-let loop = [...bmesh.faces][0].loop.prev
+let loop = [...bmesh.faces][0]!.loop.prev!
 
 console.log(bmesh)
 
@@ -55,11 +55,11 @@ App.renderLoop()
 // App.createRenderLoop( onPreRender ).start();
 
 function initUI() {
-	document.getElementById('btnPrev').addEventListener('click', loopPrev)
-	document.getElementById('btnNext').addEventListener('click', loopNext)
+	document.getElementById('btnPrev')!.addEventListener('click', loopPrev)
+	document.getElementById('btnNext')!.addEventListener('click', loopNext)
 
-	document.getElementById('btnRPrev').addEventListener('click', radialPrev)
-	document.getElementById('btnRNext').addEventListener('click', radialNext)
+	document.getElementById('btnRPrev')!.addEventListener('click', radialPrev)
+	document.getElementById('btnRNext')!.addEventListener('click', radialNext)
 }
 
 function render() {
@@ -91,40 +91,40 @@ function renderFace() {
 }
 
 function loopNext() {
-	loop = loop.next
+	loop = loop.next!
 	render()
 }
 
 function loopPrev() {
-	loop = loop.prev
+	loop = loop.prev!
 	render()
 }
 
 function radialNext() {
-	loop = loop.radialLink.next.loop
+	loop = loop.radialLink.next!.loop
 	render()
 }
 
 function radialPrev() {
-	loop = loop.radialLink.prev.loop
+	loop = loop.radialLink.prev!.loop
 	render()
 }
 
-function drawFace(/**@type {Face2}*/ f, lineColor = deeppink) {
-	// const offset = Math.random()
-	const offset = 0
-	for (const [l] of f.loop.radial()) {
-		const pointSize = 5
-		Debug.pnt.addPoint(vec3.add(l.vertex.toArray(), [offset, offset, offset]), deeppink, pointSize)
-		Debug.ln.addPoint(
-			vec3.add(l.edge.vertexA.toArray(), [offset, offset, offset]),
-			vec3.add(l.edge.vertexB.toArray(), [offset, offset, offset]),
-			lineColor,
-		)
-	}
-}
+// function drawFace(f: Face2, lineColor = deeppink) {
+// 	// const offset = Math.random()
+// 	const offset = 0
+// 	for (const [l] of f.loop.radial()) {
+// 		const pointSize = 5
+// 		Debug.pnt.addPoint(vec3.add(l.vertex.toArray(), [offset, offset, offset]), deeppink, pointSize)
+// 		Debug.ln.addPoint(
+// 			vec3.add(l.edge.vertexA.toArray(), [offset, offset, offset]),
+// 			vec3.add(l.edge.vertexB.toArray(), [offset, offset, offset]),
+// 			lineColor,
+// 		)
+// 	}
+// }
 
-function drawMesh(/**@type {BMesh2}*/ bmesh) {
+function drawMesh(bmesh: BMesh2) {
 	// This duplicates the rendering of shared edges and vertices.
 	// let i = 0
 	// for (const f of bmesh.faces) {

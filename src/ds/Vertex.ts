@@ -14,27 +14,27 @@ typedef struct BMVert {
 } BMVert;
 */
 
-import type Edge from './Edge';
+import type Edge from './Edge.js'
 
-export class Vertex{
-    // #region MAIN
-    id   : string           = window.crypto.randomUUID();
-    pos  : Array< number >  = [0,0,0];
-    edge : Edge | null      = null;     // Reference to first edge using this vert as an origin.
+export class Vertex {
+	// #region MAIN
+	id: string = window.crypto.randomUUID()
+	pos: Array<number> = [0, 0, 0]
+	edge: Edge | null = null // Reference to first edge using this vert as an origin.
 
-    constructor( v ?: Array<number> ){
-        if( v ) this.setPos( v );
-    }
-    // #endregion
+	constructor(v?: Array<number>) {
+		if (v) this.setPos(v)
+	}
+	// #endregion
 
-    // #region SETTERS
-    setPos( v: Array<number> ){
-        this.pos[ 0 ] = v[ 0 ];
-        this.pos[ 1 ] = v[ 1 ];
-        this.pos[ 2 ] = v[ 2 ];
-        return this;
-    }
-    // #endregion
+	// #region SETTERS
+	setPos(v: Array<number>) {
+		this.pos[0] = v[0]
+		this.pos[1] = v[1]
+		this.pos[2] = v[2]
+		return this
+	}
+	// #endregion
 }
 
 export default Vertex

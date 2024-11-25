@@ -1,5 +1,5 @@
-import { BMesh2 } from './BMesh2'
-import { Edge2, EdgeLink } from './Edge2'
+import { BMesh2 } from './BMesh2.js'
+import { Edge2, EdgeLink } from './Edge2.js'
 
 export class Vertex2 {
 	x: number

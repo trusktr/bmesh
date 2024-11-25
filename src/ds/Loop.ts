@@ -91,57 +91,60 @@ typedef struct BMLoop {
   } BMLoop;
 */
 
-import type Vertex  from './Vertex';
-import type Edge    from './Edge';
-import type Face    from './Face';
+import type Vertex from './Vertex.js'
+import type Edge from './Edge.js'
+import type Face from './Face.js'
 
 // Note: Each loop represents an edge of a face stored in a circular linked lists
 // Also holds other loops(faces) that share this edge
 export class Loop {
+	// #region MAIN
+	vert!: Vertex
+	edge!: Edge // Start Edge, ver order doesn't matter in this constraint? [Loop.v,Loop.next.v] == [ Edge.v1, Edge.v2 ],
+	face!: Face // There will only be one face using an edge
 
-    // #region MAIN
-    vert        !: Vertex;      
-    edge        !: Edge;    // Start Edge, ver order doesn't matter in this constraint? [Loop.v,Loop.next.v] == [ Edge.v1, Edge.v2 ], 
-    face        !: Face;    // There will only be one face using an edge
+	// Other Loops( faces ) connected to this edge
+	// Every loop in this radial list has the same value for Loop.edge
+	radial_prev!: Loop
+	radial_next!: Loop
 
-    // Other Loops( faces ) connected to this edge
-    // Every loop in this radial list has the same value for Loop.edge
-    radial_prev !: Loop;
-    radial_next !: Loop;
-    
-    // Other loops (edges) that are part of this face
-    // Every loop in this "cycle" list has the same value for Loop.face
-    // Direction of this list defines the face winding
-    next        !: Loop;
-    prev        !: Loop;
-    // #endregion
+	// Other loops (edges) that are part of this face
+	// Every loop in this "cycle" list has the same value for Loop.face
+	// Direction of this list defines the face winding
+	next!: Loop
+	prev!: Loop
+	// #endregion
 
-    // #region ITERS
+	// #region ITERS
 
-    iterNext(){
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        let loop: Loop = this;
-        const result: { value ?: Loop, done:boolean } = { value: undefined, done: false };
-        const next = ()=>{
-            if( result.value !== undefined && loop == this ) result.done = true;
-                
-            result.value = loop;
-            loop         = loop.next;
-            return result;
-        };
+	iterNext() {
+		// eslint-disable-next-line @typescript-eslint/no-this-alias
+		let loop: Loop = this
+		const result: { value?: Loop; done: boolean } = { value: undefined, done: false }
+		const next = () => {
+			if (result.value !== undefined && loop == this) result.done = true
 
-        return { [Symbol.iterator](){ return { next }; } };
-    }
+			result.value = loop
+			loop = loop.next
+			return result
+		}
 
-    *loop() {
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        let loop: Loop = this;
-        do  { yield loop }
-        while ( ( loop = loop.next ) != this );
-    }
+		return {
+			[Symbol.iterator]() {
+				return { next }
+			},
+		}
+	}
 
-    // #endregion
+	*loop() {
+		// eslint-disable-next-line @typescript-eslint/no-this-alias
+		let loop: Loop = this
+		do {
+			yield loop
+		} while ((loop = loop.next) != this)
+	}
 
+	// #endregion
 }
 
 export default Loop

@@ -1,8 +1,8 @@
-import { BMesh2 } from './BMesh2'
-import { Loop2 } from './Loop2'
-import { Link } from './Link'
-import { InvalidEdgeLinkError, Vertex2 } from './Vertex2'
-import { RadialLink } from './Face2'
+import { BMesh2 } from './BMesh2.js'
+import { Loop2 } from './Loop2.js'
+import { Link } from './Link.js'
+import { InvalidEdgeLinkError, Vertex2 } from './Vertex2.js'
+import { RadialLink } from './Face2.js'
 
 export class EdgeLink extends Link {
 	override next: EdgeLink | null = null

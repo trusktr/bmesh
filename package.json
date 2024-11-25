@@ -1,55 +1,50 @@
 {
-    "name": "bmesh",
-    "version": "0.0.1",
-    "author": "Pedro Sousa ( Vor @ SketchPunk Labs )",
-    "description": "",
-    "type": "module",
-    "keywords": [
-        "mesh editing",
-        "threejs",
-        "radial edge",
-        "half edge",
-        "modeling",
-        "blender"
-    ],
-    "license": "MIT",
-    "homepage": "https://github.com/sketchpunklabs/bmesh#readme",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/sketchpunklabs/bmesh.git"
-    },
-    "bugs": {
-        "url": "https://github.com/sketchpunklabs/bmesh/issues"
-    },
-    "files": [
-        "dist"
-    ],
-    "main": "./dist/bmesh.cjs.js",
-    "module": "./dist/bmesh.es.js",
-    "types": "./dist/bmesh.d.ts",
-    "exports": {
-        ".": {
-            "import": "./dist/bmesh.es.js",
-            "require": "./dist/bmesh.cjs.js"
-        }
-    },
-    "scripts": {
-        "dev": "vite --config vite.config.js",
-        "build": "vite build",
-        "build:types": "tsc --declaration --noEmit false --emitDeclarationOnly --strict false --outDir ./dist",
-        "build:site": "vite build --mode site",
-        "preview-site": "vite preview",
-        "lint": "eslint . --ext .ts"
-    },
-    "devDependencies": {
-        "@types/three": "^0.148.0",
-        "@typescript-eslint/eslint-plugin": "^6.8.0",
-        "@typescript-eslint/parser": "^6.8.0",
-        "eslint": "^8.51.0",
-        "prettier": "^3.3.3",
-        "three": "^0.148.0",
-        "typescript": "^5.2.2",
-        "vite": "^5.4.11",
-        "vite-plugin-list-directory-contents": "^1.4.5"
-    }
+	"name": "bmesh",
+	"version": "0.0.1",
+	"author": "Pedro Sousa ( Vor @ SketchPunk Labs )",
+	"description": "",
+	"type": "module",
+	"license": "MIT",
+	"homepage": "https://github.com/sketchpunklabs/bmesh#readme",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/sketchpunklabs/bmesh.git"
+	},
+	"bugs": {
+		"url": "https://github.com/sketchpunklabs/bmesh/issues"
+	},
+	"files": [
+		"dist",
+		"!/dist/prototypes/",
+		"src",
+		"!/src/prototypes/"
+	],
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"scripts": {
+		"dev": "rimraf dist && concurrently 'tsc --watch' 'npm run serve'",
+		"build": "rimraf dist && tsc",
+		"serve": "five-server . --port=3015",
+		"lint": "eslint . --ext .ts"
+	},
+	"devDependencies": {
+		"@types/three": "^0.148.0",
+		"@typescript-eslint/eslint-plugin": "^6.8.0",
+		"@typescript-eslint/parser": "^6.8.0",
+		"concurrently": "^9.1.0",
+		"eslint": "^8.51.0",
+		"five-server": "^0.3.3",
+		"prettier": "^3.3.3",
+		"rimraf": "^6.0.1",
+		"three": "^0.148.0",
+		"typescript": "^5.2.2"
+	},
+	"keywords": [
+		"mesh editing",
+		"threejs",
+		"radial edge",
+		"half edge",
+		"modeling",
+		"blender"
+	]
 }

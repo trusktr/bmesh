@@ -1,4 +1,4 @@
-import useThreeWebGL2, { useDarkScene, useVisualDebug } from '../_lib/useThreeWebGL2.js'
+import useThreeWebGL2, { useDarkScene, useVisualDebug } from '../../../prototypes/_lib/useThreeWebGL2.js'
 
 import { BMesh2, Edge2, Face2, Vertex2 } from 'bmesh'
 import { cyan, deeppink } from '../colors.js'

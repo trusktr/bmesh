@@ -31,57 +31,61 @@ typedef struct BMEdge {
 } BMEdge;
 */
 
-import type Vertex from './Vertex';
-import type Loop   from './Loop';
+import type Vertex from './Vertex.js'
+import type Loop from './Loop.js'
 
 // Circular linked List of edges
-export class DiskLink{
-    next !: Edge;  // Use any to make it null without the requirement to have null checks
-    prev !: Edge;  // Will only be set to null when deleting to help with garbage collection
+export class DiskLink {
+	next!: Edge // Use any to make it null without the requirement to have null checks
+	prev!: Edge // Will only be set to null when deleting to help with garbage collection
 }
 
-export class Edge{
+export class Edge {
+	// #region MAIN
+	id: string = window.crypto.randomUUID()
+	v1!: Vertex
+	v2!: Vertex
+	loop: Loop | null = null // First loop, use to loop over all faces this edge is part of
 
-    // #region MAIN
-    id       : string = window.crypto.randomUUID();
-    v1      !: Vertex;
-    v2      !: Vertex;
-    loop     : Loop | null = null; // First loop, use to loop over all faces this edge is part of
+	v1_disk: DiskLink = new DiskLink() // Circular linked List of edges using V1 as origin
+	v2_disk: DiskLink = new DiskLink() // Circular linked List of edges using v2 as origin
 
-    v1_disk  : DiskLink = new DiskLink; // Circular linked List of edges using V1 as origin
-    v2_disk  : DiskLink = new DiskLink; // Circular linked List of edges using v2 as origin
-    
-    constructor( v1?: Vertex, v2?: Vertex ){
-        if( v1 && v2 ){
-            this.v1 = v1;
-            this.v2 = v2;
-        }
-    }
-    // #endregion
+	constructor(v1?: Vertex, v2?: Vertex) {
+		if (v1 && v2) {
+			this.v1 = v1
+			this.v2 = v2
+		}
+	}
+	// #endregion
 
-    // #region BMESH OPS / QUERIES
+	// #region BMESH OPS / QUERIES
 
-    // bmesh_disk_edge_link_from_vert : https://github.com/blender/blender/blob/48e60dcbffd86f3778ce75ab67f95461ffbe319c/source/blender/bmesh/intern/bmesh_structure_inline.h#L17
-    getDiskFromVert( v: Vertex ): DiskLink{
-        return ( v === this.v1 )? this.v1_disk : this.v2_disk; 
-    }
+	// bmesh_disk_edge_link_from_vert : https://github.com/blender/blender/blob/48e60dcbffd86f3778ce75ab67f95461ffbe319c/source/blender/bmesh/intern/bmesh_structure_inline.h#L17
+	getDiskFromVert(v: Vertex): DiskLink {
+		return v === this.v1 ? this.v1_disk : this.v2_disk
+	}
 
-    // bmesh_disk_edge_next : https://github.com/blender/blender/blob/48e60dcbffd86f3778ce75ab67f95461ffbe319c/source/blender/bmesh/bmesh_class.h#L643
-    diskEdgeNext( v: Vertex ): Edge{ return ( v === this.v1 )? this.v1_disk.next : this.v2_disk.next; }
-    diskEdgePrev( v: Vertex ): Edge{ return ( v === this.v1 )? this.v1_disk.prev : this.v2_disk.prev;  }
+	// bmesh_disk_edge_next : https://github.com/blender/blender/blob/48e60dcbffd86f3778ce75ab67f95461ffbe319c/source/blender/bmesh/bmesh_class.h#L643
+	diskEdgeNext(v: Vertex): Edge {
+		return v === this.v1 ? this.v1_disk.next : this.v2_disk.next
+	}
+	diskEdgePrev(v: Vertex): Edge {
+		return v === this.v1 ? this.v1_disk.prev : this.v2_disk.prev
+	}
 
-    // BM_vert_in_edge : https://github.com/blender/blender/blob/48e60dcbffd86f3778ce75ab67f95461ffbe319c/source/blender/bmesh/intern/bmesh_query_inline.h#L19
-    vertExists( v: Vertex ): boolean{ return ( this.v1 === v || this.v2 === v ); }
+	// BM_vert_in_edge : https://github.com/blender/blender/blob/48e60dcbffd86f3778ce75ab67f95461ffbe319c/source/blender/bmesh/intern/bmesh_query_inline.h#L19
+	vertExists(v: Vertex): boolean {
+		return this.v1 === v || this.v2 === v
+	}
 
-    // BM_edge_other_vert : https://github.com/blender/blender/blob/2864c20302513dae0443af461d225b5a1987267a/source/blender/bmesh/intern/bmesh_query_inline.h#L48
-    getOtherVert( v: Vertex ): Vertex | null{ 
-        if( v == this.v1 ) return this.v2;
-        if( v == this.v2 ) return this.v1;
-        return null
-    }
- 
-    // #endregion
+	// BM_edge_other_vert : https://github.com/blender/blender/blob/2864c20302513dae0443af461d225b5a1987267a/source/blender/bmesh/intern/bmesh_query_inline.h#L48
+	getOtherVert(v: Vertex): Vertex | null {
+		if (v == this.v1) return this.v2
+		if (v == this.v2) return this.v1
+		return null
+	}
 
+	// #endregion
 }
 
 export default Edge

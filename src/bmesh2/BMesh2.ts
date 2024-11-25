@@ -1,7 +1,7 @@
-import { Edge2 } from './Edge2'
-import { Face2 } from './Face2'
-import { Loop2 } from './Loop2'
-import { Vertex2 } from './Vertex2'
+import { Edge2 } from './Edge2.js'
+import { Face2 } from './Face2.js'
+import { Loop2 } from './Loop2.js'
+import { Vertex2 } from './Vertex2.js'
 
 /**
  * This is a port of Blender's BMesh data structure to JavaScript, but without

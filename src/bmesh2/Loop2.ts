@@ -1,8 +1,8 @@
-import { BMesh2 } from './BMesh2'
-import { Edge2 } from './Edge2'
-import { Face2, RadialLink } from './Face2'
-import { Link } from './Link'
-import { Vertex2 } from './Vertex2'
+import { BMesh2 } from './BMesh2.js'
+import { Edge2 } from './Edge2.js'
+import { Face2, RadialLink } from './Face2.js'
+import { Link } from './Link.js'
+import { Vertex2 } from './Vertex2.js'
 
 export class Loop2 extends Link {
 	vertex: Vertex2

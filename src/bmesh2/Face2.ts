@@ -1,8 +1,8 @@
-import { BMesh2 } from './BMesh2'
-import { Loop2 } from './Loop2'
-import { Edge2 } from './Edge2'
-import { Link } from './Link'
-import { Vertex2 } from './Vertex2'
+import { BMesh2 } from './BMesh2.js'
+import { Loop2 } from './Loop2.js'
+import { Edge2 } from './Edge2.js'
+import { Link } from './Link.js'
+import { Vertex2 } from './Vertex2.js'
 
 export class RadialLink extends Link {
 	override next: RadialLink | null = null

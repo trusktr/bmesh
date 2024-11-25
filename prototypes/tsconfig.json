@@ -1,4 +1,4 @@
-// This file enables intellisense and type checking for prototypes, without changing the build setup.
+// This file enables intellisense and type checking in IDEs for plain JS files in prototypes/, without requiring a build step.
 {
 	"compilerOptions": {
 		"allowJs": true,
@@ -20,5 +20,5 @@
 		"noUncheckedIndexedAccess": true,
 		"noUncheckedSideEffectImports": true
 	},
-	"include": ["./**/*"]
+	"include": ["./**/*", "../src/prototypes/colors.ts", "../src/prototypes/ops/002_traverse_edges2.ts"]
 }
