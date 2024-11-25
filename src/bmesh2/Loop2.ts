@@ -4,12 +4,12 @@ import { Face2, RadialLink } from './Face2'
 import { Link } from './Link'
 import { Vertex2 } from './Vertex2'
 
-export class Loop2 implements Link {
+export class Loop2 extends Link {
 	vertex: Vertex2
 	edge: Edge2
 	face: Face2
-	next: Loop2 | null
-	prev: Loop2 | null
+	override next: Loop2 | null
+	override prev: Loop2 | null
 	radialLink: RadialLink
 
 	// BM_loop_create
@@ -21,6 +21,8 @@ export class Loop2 implements Link {
 		next: Loop2 | null = null,
 		prev: Loop2 | null = null,
 	) {
+		super()
+
 		this.vertex = vertex
 		this.edge = edge
 		this.face = face

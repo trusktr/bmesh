@@ -4,12 +4,13 @@ import { Link } from './Link'
 import { InvalidEdgeLinkError, Vertex2 } from './Vertex2'
 import { RadialLink } from './Face2'
 
-export class EdgeLink implements Link {
-	next: EdgeLink | null = null
-	prev: EdgeLink | null = null
+export class EdgeLink extends Link {
+	override next: EdgeLink | null = null
+	override prev: EdgeLink | null = null
 	readonly edge: Edge2
 
 	constructor(edge: Edge2) {
+		super()
 		this.edge = edge
 	}
 }

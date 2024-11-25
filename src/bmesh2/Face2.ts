@@ -4,12 +4,13 @@ import { Edge2 } from './Edge2'
 import { Link } from './Link'
 import { Vertex2 } from './Vertex2'
 
-export class RadialLink implements Link {
-	next: RadialLink | null = null
-	prev: RadialLink | null = null
+export class RadialLink extends Link {
+	override next: RadialLink | null = null
+	override prev: RadialLink | null = null
 	readonly loop: Loop2
 
 	constructor(loop: Loop2) {
+		super()
 		this.loop = loop
 	}
 }
