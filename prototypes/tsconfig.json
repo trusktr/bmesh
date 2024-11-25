@@ -1,0 +1,24 @@
+// This file enables intellisense and type checking for prototypes, without changing the build setup.
+{
+	"compilerOptions": {
+		"allowJs": true,
+		"checkJs": true,
+		"target": "ESNext",
+		"module": "ESNext",
+		"moduleResolution": "node",
+		"paths": {
+			"bmesh": ["../src/index.js"],
+			"bmesh/*": ["../*"]
+		},
+
+		"strict": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noImplicitReturns": true,
+		"noImplicitOverride": true,
+		"noFallthroughCasesInSwitch": true,
+		"noUncheckedIndexedAccess": true,
+		"noUncheckedSideEffectImports": true
+	},
+	"include": ["./**/*"]
+}

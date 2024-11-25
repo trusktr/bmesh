@@ -20,6 +20,8 @@ window.addEventListener( 'load', async _=>{
     // Setup
     Debug = await useVisualDebug( App );
     App.sphericalLook( 0, 20, 6 );
+    App.camera.position.x = 5
+    App.camCtrl.update()
     
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     const mesh  = new BMesh();
@@ -36,6 +38,9 @@ window.addEventListener( 'load', async _=>{
     const f1    = mesh.addFace( [ v1, v4, v5, v2 ] );
     const f0    = mesh.addFace( [ v0, v3, v4, v1 ] );
     const f2    = mesh.addFace( [ v1, v6, v7, v4 ] );
+
+    const v8 = mesh.addVertex( [ 0, 1.5, 1.5 ] );
+    const e0 = mesh.addEdge( v7, v8 );
 
     Ref.mesh    = mesh;
     // drawFace( f0 );

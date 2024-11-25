@@ -1,1 +1,6 @@
 export * from './BMesh2'
+export * from './Edge2'
+export * from './Face2'
+export * from './Link'
+export * from './Loop2'
+export * from './Vertex2'

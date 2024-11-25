@@ -1,3 +1,8 @@
+import { Edge2 } from './Edge2'
+import { Face2 } from './Face2'
+import { Loop2 } from './Loop2'
+import { Vertex2 } from './Vertex2'
+
 /**
  * This is a port of Blender's BMesh data structure to JavaScript, but without
  * anything specific to rendering such as normals or material indices. Maybe

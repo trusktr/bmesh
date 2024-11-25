@@ -47,7 +47,7 @@ export class ShapePointsMesh extends THREE.Points{
     addPoint( pos, color = this._defaultColor, size = this._defaultSize, shape = this._defaultShape, perspective = this._defaultPerspective ){
         this._verts.push( pos[0], pos[1], pos[2] );
         this._color.push( ...glColor( color ) );
-        this._config.push( size, shape );
+        this._config.push( size * devicePixelRatio, shape );
         this._perspective.push( +perspective );
         this._cnt++;
         this._dirty = true;

@@ -157,7 +157,7 @@ function newDynLineMeshMaterial(){
         dashSeg : { value : 1 / 0.07 },
         dashDiv : { value : 0.4 },
     },
-    vertexShader    : `#version 300 es
+    vertexShader    : /*glsl*/`#version 300 es
     in	vec3    position;
     in	vec3    color;
     in	float   config;
@@ -177,7 +177,7 @@ function newDynLineMeshMaterial(){
 
         gl_Position			= projectionMatrix * wPos;
     }`,
-    fragmentShader  : `#version 300 es
+    fragmentShader  : /*glsl*/`#version 300 es
     precision mediump float;
 
     uniform float dashSeg;

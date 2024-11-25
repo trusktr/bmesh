@@ -1,13 +1,8 @@
 import useThreeWebGL2, { useDarkScene, useVisualDebug } from '../_lib/useThreeWebGL2.js'
 
-import { BMesh, BMesh2, Face2, vec3, Vertex2 } from 'bmesh'
+import { BMesh2, Face2, vec3, Vertex2 } from 'bmesh'
+import { cyan, deeppink, yellow } from '../colors.js'
 /** @import { Face } from 'bmesh' */
-
-const cyan = 0x00ffff
-const deeppink = 0xff1493
-const yellow = 0xffff00
-const red = 0xff0000
-const orange = 0xffa500
 
 const App = useDarkScene(useThreeWebGL2())
 
@@ -35,8 +30,6 @@ const fVerts1 = [v0, v3, v4, v1]
 new Face2(bmesh, fVerts1, bmesh.edgesFromVerts(...fVerts1))
 const fVerts2 = [v1, v6, v7, v4]
 new Face2(bmesh, fVerts2, bmesh.edgesFromVerts(...fVerts2))
-
-// console.log('edges:', bmesh.edgesFromVerts(...fVerts1))
 
 // three faces
 console.assert(bmesh.faces.size === 3)
@@ -84,8 +77,8 @@ function render() {
 	// vec3.add(a, n, a)
 	// vec3.add(b, n, b)
 
-	const cssPointSize = 5 * devicePixelRatio
-	Debug.pnt.addPoint(a, cyan, cssPointSize)
+	const pointSize = 5
+	Debug.pnt.addPoint(a, cyan, pointSize)
 	Debug.ln.addPoint(a, b, cyan)
 
 	renderFace()
@@ -93,8 +86,8 @@ function render() {
 
 function renderFace() {
 	const avg = vec3.avg(...[...loop.radial()].map(([l]) => l.vertex.toArray()))
-	const cssPointSize = 7 * devicePixelRatio
-	Debug.pnt.addPoint(avg, yellow, cssPointSize, 2)
+	const pointSize = 7
+	Debug.pnt.addPoint(avg, yellow, pointSize, 2)
 }
 
 function loopNext() {
@@ -121,8 +114,8 @@ function drawFace(/**@type {Face2}*/ f, lineColor = deeppink) {
 	// const offset = Math.random()
 	const offset = 0
 	for (const [l] of f.loop.radial()) {
-		const cssPointSize = 5 * devicePixelRatio
-		Debug.pnt.addPoint(vec3.add(l.vertex.toArray(), [offset, offset, offset]), deeppink, cssPointSize)
+		const pointSize = 5
+		Debug.pnt.addPoint(vec3.add(l.vertex.toArray(), [offset, offset, offset]), deeppink, pointSize)
 		Debug.ln.addPoint(
 			vec3.add(l.edge.vertexA.toArray(), [offset, offset, offset]),
 			vec3.add(l.edge.vertexB.toArray(), [offset, offset, offset]),
@@ -142,8 +135,8 @@ function drawMesh(/**@type {BMesh2}*/ bmesh) {
 	// }
 
 	// This does not duplicate edges/vertices, and it covers non-faces too (f.e. standalone edges)
-	const cssPointSize = 5 * devicePixelRatio
-	for (const v of bmesh.vertices) Debug.pnt.addPoint(v.toArray(), deeppink, cssPointSize)
+	const pointSize = 5
+	for (const v of bmesh.vertices) Debug.pnt.addPoint(v.toArray(), deeppink, pointSize)
 	for (const e of bmesh.edges) Debug.ln.addPoint(e.vertexA.toArray(), e.vertexB.toArray(), deeppink)
 }
 
