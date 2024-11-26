@@ -16,6 +16,9 @@ html {
 	transform: translateX(-50%);
 	display: flex;
 	gap: 10px;
+	flex-wrap: wrap;
+	width: 100%;
+	justify-content: center;
 }
 
 .btn {
