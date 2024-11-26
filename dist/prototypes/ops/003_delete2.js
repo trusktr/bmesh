@@ -42,6 +42,9 @@ function initUI() {
     document.getElementById('btnPrev').addEventListener('click', prevEdge);
     document.getElementById('btnNext').addEventListener('click', nextEdge);
     document.getElementById('btnFlip').addEventListener('click', flip);
+    document.getElementById('btnDelVert').addEventListener('click', deleteVert);
+    document.getElementById('btnDelEdge').addEventListener('click', deleteEdge);
+    document.getElementById('btnDelFace').addEventListener('click', deleteFace);
 }
 function render() {
     Debug.pnt.reset();
@@ -75,6 +78,54 @@ function flip() {
     if (!edge || !vert)
         return;
     vert = edge.otherVertex(vert);
+    render();
+}
+function deleteVert() {
+    if (!vert)
+        return;
+    const oldVert = vert;
+    // If we're on a lone vert dereference or we'll leak it and keep rendering
+    // the selection.
+    if (!vert.edgeCount) {
+        vert = undefined;
+    }
+    // not lone vert
+    else {
+        vert = edge.otherVertex(vert);
+        const oldEdge = edge;
+        edge = edge.nextEdgeLink(vert).edge;
+        // If we're on a standalone edge, dereference it.
+        if (oldEdge === edge)
+            edge = undefined;
+    }
+    oldVert.remove();
+    render();
+}
+function deleteEdge() {
+    if (!edge)
+        return;
+    const oldEdge = edge;
+    // If the current edge is the last edge of the current vert, switch to the
+    // other vert, otherwise we'll get stuck on a lone vert with no edges (and
+    // we don't have click-to-select yet).
+    let nextEdge = edge.nextEdgeLink(vert).edge;
+    let isLastEdge = edge === nextEdge;
+    if (isLastEdge)
+        vert = edge.otherVertex(vert);
+    edge = edge.nextEdgeLink(vert).edge;
+    // If the current edge is also the last edge of the second vert (i.e. the
+    // current edge is a lone edge), dereference it otherwise we'll keep
+    // erroneously rendering the edge selection and won't let the deleted edge
+    // be GC'd.
+    nextEdge = edge.nextEdgeLink(vert).edge;
+    isLastEdge = edge === nextEdge;
+    if (isLastEdge)
+        edge = undefined;
+    oldEdge.remove();
+    render();
+}
+function deleteFace() {
+    edge?.radialLink?.loop.face?.remove();
     render();
 }
 function renderFace(f) {

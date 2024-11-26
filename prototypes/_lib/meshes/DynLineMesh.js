@@ -8,7 +8,7 @@ export class DynLineMesh extends THREE.LineSegments{
     _config         = [];
     _dirty          = false;
 
-    constructor( initSize = 20 ){
+    constructor( initSize = 20, customLineMaterial = null ){
         super( 
             _newDynLineMeshGeometry( 
                 new Float32Array( initSize * 2 * 3 ), // Two Points for Each Line
@@ -16,7 +16,7 @@ export class DynLineMesh extends THREE.LineSegments{
                 new Float32Array( initSize * 2 * 1 ),
                 false
             ),
-            newDynLineMeshMaterial() //new THREE.PointsMaterial( { color: 0xffffff, size:8, sizeAttenuation:false } )
+            customLineMaterial ?? newDynLineMeshMaterial() //new THREE.PointsMaterial( { color: 0xffffff, size:8, sizeAttenuation:false } )
         );
 
         this.geometry.setDrawRange( 0, 0 );
@@ -151,47 +151,50 @@ function glColor( hex, out = null ){
 
 function newDynLineMeshMaterial(){
     return new THREE.RawShaderMaterial({
-    depthTest       : false,
-    transparent 	: true, 
-    uniforms        : { 
-        dashSeg : { value : 1 / 0.07 },
-        dashDiv : { value : 0.4 },
-    },
-    vertexShader    : /*glsl*/`#version 300 es
-    in	vec3    position;
-    in	vec3    color;
-    in	float   config;
-    
-    uniform     mat4    modelViewMatrix;
-    uniform     mat4    projectionMatrix;
-    uniform     float   u_scale;
+        depthTest       : false,
+        transparent 	: true, 
+        uniforms        : { 
+            dashSeg : { value : 1 / 0.07 },
+            dashDiv : { value : 0.4 },
+        },
+        vertexShader    : /*glsl*/`#version 300 es
+            in vec3  position;
+            in vec3  color;
+            in float config;
+            
+            uniform mat4  modelViewMatrix;
+            uniform mat4  projectionMatrix;
+            uniform float u_scale;
 
-    out 	    vec3    fragColor;
-    out         float   fragLen;
-    
-    void main(){
-        vec4 wPos 	        = modelViewMatrix * vec4( position, 1.0 );
-        
-        fragColor			= color;
-        fragLen			    = config;
+            out vec3  fragColor;
+            out float fragLen;
+            
+            void main(){
+                vec4 wPos   = modelViewMatrix * vec4( position, 1.0 );
+                
+                fragColor   = color;
+                fragLen     = config;
 
-        gl_Position			= projectionMatrix * wPos;
-    }`,
-    fragmentShader  : /*glsl*/`#version 300 es
-    precision mediump float;
+                gl_Position = projectionMatrix * wPos;
+            }
+        `,
+        fragmentShader  : /*glsl*/`#version 300 es
+            precision mediump float;
 
-    uniform float dashSeg;
-    uniform float dashDiv;
+            uniform float dashSeg;
+            uniform float dashDiv;
 
-    in  vec3    fragColor;
-    in  float   fragLen;
-    out vec4    outColor;
+            in  vec3    fragColor;
+            in  float   fragLen;
+            out vec4    outColor;
 
-    void main(){
-        float alpha = 1.0;
-        if( fragLen > 0.0 ) alpha = step( dashDiv, fract( fragLen * dashSeg ) );
-        outColor = vec4( fragColor, alpha );
-    }`});
+            void main(){
+                float alpha = 1.0;
+                if( fragLen > 0.0 ) alpha = step( dashDiv, fract( fragLen * dashSeg ) );
+                outColor = vec4( fragColor, alpha );
+            }
+        `
+    });
 }
 
 //#endregion

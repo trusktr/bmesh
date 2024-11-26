@@ -1,21 +1,23 @@
+import { Edge2 } from './Edge2.js';
+import { Face2, RadialLoopLink } from './Face2.js';
 import { Link } from './Link.js';
-export class Loop2 extends Link {
+import { Vertex2 } from './Vertex2.js';
+export class Loop2 extends Link() {
+    next;
+    prev;
     vertex;
     edge;
     face;
-    next;
-    prev;
-    radialLink;
-    // BM_loop_create
-    constructor(mesh, face, vertex, edge, next = null, prev = null) {
+    /** A circular linked list of Loops that share the same edge. This Link contains this Loop. */
+    radialLink = new RadialLoopLink(this);
+    /** Do not use this constructor directly, use Vertex, Edge, and Face constructors. */
+    constructor(face, vertex, edge, next = null, prev = null) {
         super();
         this.vertex = vertex;
         this.edge = edge;
         this.face = face;
         this.next = next;
         this.prev = prev;
-        this.radialLink = edge.addLoop(this);
-        mesh.addLoop(this);
     }
     /**
      * Iterate all the Loops of the current radial loop (the current face, the
@@ -23,13 +25,13 @@ export class Loop2 extends Link {
      */
     *radial(forward = true, check = true) {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
-        let loop = this;
+        let link = this;
         let i = 0;
         do {
-            if (!loop)
+            if (!link)
                 throw new InvalidLoopError();
-            yield [loop, i++];
-        } while ((loop = forward ? loop.next : loop.prev) != this && (check || (!check && loop)));
+            yield [link, i++];
+        } while ((link = forward ? link.next : link.prev) != this && (check || (!check && link)));
     }
     /**
      * Iterate all the Loops of the current radial loop (the current face, the

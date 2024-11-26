@@ -1,4 +1,5 @@
 // #region IMPORTS
+import { darkerLimeGreen, mediumGray, } from 'bmesh/dist/prototypes/colors.js';
 import * as THREE           from 'three';
 import { OrbitControls }    from 'three/examples/jsm/controls/OrbitControls.js';
 export { THREE };
@@ -29,24 +30,27 @@ export function useDarkScene( /** @type {App} */ tjs, props={} ){
     tjs.scene.add( light );
     
     tjs.scene.add( new THREE.AmbientLight( pp.ambient ) );
+
+    const gridAxesColor = darkerLimeGreen;
+    const gridLinesColor = mediumGray;
     
     // Floor
-    if( pp.grid ) tjs.scene.add( new THREE.GridHelper( 20, 20, 0x0c610c, 0x444444 ) );
+    if( pp.grid ) tjs.scene.add( new THREE.GridHelper( 20, 20, gridAxesColor, gridLinesColor ) );
 
     // Renderer
     tjs.renderer.setClearColor( 0x3a3a3a, 1 );
     return tjs;
 }
 
-export async function useVisualDebug( /** @type {App} */ tjs ){
+export async function useVisualDebug( /** @type {App} */ tjs, customLineMaterial = null ){
     const [{DynLineMesh}, {ShapePointsMesh}] = await Promise.all([
         import( './meshes/DynLineMesh.js'     ),
         import( './meshes/ShapePointsMesh.js' ),
     ]);
 
     const o = {};
-    tjs.scene.add( ( o.ln  = new DynLineMesh     ) );
-    tjs.scene.add( ( o.pnt = new ShapePointsMesh ) );
+    tjs.scene.add( ( o.ln  = new DynLineMesh(20, customLineMaterial) ) );
+    tjs.scene.add( ( o.pnt = new ShapePointsMesh                       ) );
 
     o.reset = ()=>{
         o.ln.reset();
@@ -109,7 +113,7 @@ export default function useThreeWebGL2( props={} ){
         renderer.shadowMap.type    = THREE.PCFSoftShadowMap; // default THREE.PCFShadowMap
     }
 
-    if( !props.canvas ) document.body.appendChild( renderer.domElement );
+    if( !props.canvas ) document.body.prepend( renderer.domElement );
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // CORE

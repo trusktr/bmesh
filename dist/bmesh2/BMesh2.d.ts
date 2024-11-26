@@ -1,6 +1,5 @@
 import { Edge2 } from './Edge2.js';
 import { Face2 } from './Face2.js';
-import { Loop2 } from './Loop2.js';
 import { Vertex2 } from './Vertex2.js';
 /**
  * This is a port of Blender's BMesh data structure to JavaScript, but without
@@ -12,12 +11,10 @@ import { Vertex2 } from './Vertex2.js';
 export declare class BMesh2 {
     vertices: Set<Vertex2>;
     edges: Set<Edge2>;
-    loops: Set<Loop2>;
     faces: Set<Face2>;
     addVertex(vertex: Vertex2): void;
     addEdge(edge: Edge2): void;
     addFace(face: Face2): void;
-    addLoop(loop: Loop2): void;
     edgesFromVerts(...vertices: Vertex2[]): Edge2[];
     /** Returns the face that exists between the given vertices, or null if none. */
     static existingFace(vertices: Vertex2[]): Face2 | null;

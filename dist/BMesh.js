@@ -1,5 +1,7 @@
 // #region IMPORTS
 import Vertex from './ds/Vertex.js';
+import Edge from './ds/Edge.js';
+import Loop from './ds/Loop.js';
 import Face from './ds/Face.js';
 import CoreOps from './ops/CoreOps.js';
 import QueryOps from './ops/QueryOps.js';
