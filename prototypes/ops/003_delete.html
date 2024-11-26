@@ -50,20 +50,25 @@ window.addEventListener( 'load', async _=>{
     // mesh.removeFace( f1 );
     // mesh.removeEdge( mesh.edges[ 2 ] );
 
-    mesh.removeVertex( mesh.vertices[1] );
+    setTimeout(() => {
+        console.log('remove vert')
+        mesh.removeVertex( mesh.vertices[1] );
+        update()
+    }, 2000)
 
     Ref.mesh = mesh;
     console.log( mesh );
 
-    render();
+    update();
     // renderFaces();
     
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     App.renderLoop();
-    // App.createRenderLoop( onPreRender ).start();
+    // App.createRenderLoop( render ).start();
 });
 
-function render(){
+function update(){
+    console.log('update')
     Debug.pnt.reset();
     Debug.ln.reset();
 
@@ -105,6 +110,5 @@ function renderFace(){
     Debug.pnt.addPoint( [x,y,z], 0xffff00, 5, 2 );
 }
 
-// function onPreRender( dt, et ){}
 //#endregion
 </script></body></html>

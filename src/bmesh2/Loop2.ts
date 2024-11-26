@@ -1,26 +1,20 @@
-import { BMesh2 } from './BMesh2.js'
 import { Edge2 } from './Edge2.js'
-import { Face2, RadialLink } from './Face2.js'
+import { Face2, RadialLoopLink } from './Face2.js'
 import { Link } from './Link.js'
 import { Vertex2 } from './Vertex2.js'
 
-export class Loop2 extends Link {
-	vertex: Vertex2
-	edge: Edge2
-	face: Face2
+export class Loop2 extends Link() {
 	override next: Loop2 | null
 	override prev: Loop2 | null
-	radialLink: RadialLink
+	readonly vertex: Vertex2
+	readonly edge: Edge2
+	readonly face: Face2
 
-	// BM_loop_create
-	constructor(
-		mesh: BMesh2,
-		face: Face2,
-		vertex: Vertex2,
-		edge: Edge2,
-		next: Loop2 | null = null,
-		prev: Loop2 | null = null,
-	) {
+	/** A circular linked list of Loops that share the same edge. This Link contains this Loop. */
+	readonly radialLink = new RadialLoopLink(this)
+
+	/** Do not use this constructor directly, use Vertex, Edge, and Face constructors. */
+	constructor(face: Face2, vertex: Vertex2, edge: Edge2, next: Loop2 | null = null, prev: Loop2 | null = null) {
 		super()
 
 		this.vertex = vertex
@@ -28,9 +22,6 @@ export class Loop2 extends Link {
 		this.face = face
 		this.next = next
 		this.prev = prev
-		this.radialLink = edge.addLoop(this)
-
-		mesh.addLoop(this)
 	}
 
 	/**
@@ -39,13 +30,13 @@ export class Loop2 extends Link {
 	 */
 	*radial(forward = true, check = true): Generator<[loop: Loop2, index: number], void, void> {
 		// eslint-disable-next-line @typescript-eslint/no-this-alias
-		let loop: Loop2 | null = this
+		let link: Loop2 | null = this
 		let i = 0
 
 		do {
-			if (!loop) throw new InvalidLoopError()
-			yield [loop, i++]
-		} while ((loop = forward ? loop.next : loop.prev) != this && (check || (!check && loop)))
+			if (!link) throw new InvalidLoopError()
+			yield [link, i++]
+		} while ((link = forward ? link.next : link.prev) != this && (check || (!check && link)))
 	}
 
 	/**

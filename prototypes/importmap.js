@@ -8,6 +8,7 @@
 	/** @type {Record<string, string>} */
 	const relativeImports = {
 		bmesh: '../dist/index.js',
+		'bmesh/': '../',
 	}
 
 	for (const key in relativeImports) relativeImports[key] = base + relativeImports[key]

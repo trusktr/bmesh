@@ -1,4 +1,6 @@
 import { Edge2 } from './Edge2.js';
+import { Face2 } from './Face2.js';
+import { Vertex2 } from './Vertex2.js';
 /**
  * This is a port of Blender's BMesh data structure to JavaScript, but without
  * anything specific to rendering such as normals or material indices. Maybe
@@ -9,7 +11,6 @@ import { Edge2 } from './Edge2.js';
 export class BMesh2 {
     vertices = new Set();
     edges = new Set();
-    loops = new Set();
     faces = new Set();
     addVertex(vertex) {
         this.vertices.add(vertex);
@@ -23,19 +24,14 @@ export class BMesh2 {
             throw err;
         this.faces.add(face);
     }
-    addLoop(loop) {
-        this.loops.add(loop);
-    }
     // BM_edges_from_verts_ensure
     edgesFromVerts(...vertices) {
         const edges = [];
         // ensure no duplicate vertices
         if (vertices.length !== new Set(vertices).size)
             throw new TypeError('duplicate vertices not allowed');
-        console.log('verts:', ...vertices.map(v => v.toArray()));
         for (const [i, vertex] of vertices.entries()) {
             const next = vertices[(i + 1) % vertices.length];
-            console.log('existing edge?', vertex.toArray(), next.toArray(), BMesh2.existingEdge(vertex, next));
             const edge = BMesh2.existingEdge(vertex, next) ?? new Edge2(this, vertex, next);
             edges.push(edge);
         }
@@ -77,10 +73,10 @@ export class BMesh2 {
         if (!face.loop)
             return new Error('face has no loop');
         const segments = Array.from(face.loop.radial());
-        if (segments.length !== face.length)
+        if (segments.length !== face.edgeCount)
             return new Error('face length does not match loop length');
         for (const [loop, i] of segments) {
-            const nextLoop = segments[(i + 1) % face.length][0];
+            const nextLoop = segments[(i + 1) % face.edgeCount][0];
             if (nextLoop.prev !== loop)
                 return new Error('reverse loop does not match forward loop');
             if (loop.face !== nextLoop.face)

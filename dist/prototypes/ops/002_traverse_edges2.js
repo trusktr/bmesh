@@ -1,7 +1,6 @@
 import useThreeWebGL2, { useDarkScene, useVisualDebug } from '../../../prototypes/_lib/useThreeWebGL2.js';
 import { BMesh2, Face2, vec3, Vertex2 } from 'bmesh';
 import { cyan, deeppink, yellow } from '../colors.js';
-/** @import { Face } from 'bmesh' */
 const App = useDarkScene(useThreeWebGL2());
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Setup
@@ -31,8 +30,19 @@ console.assert(bmesh.faces.size === 3);
 console.assert(bmesh.edges.size === 10);
 // two faces share the same two vertices as the first face (12 - 4)
 console.assert(bmesh.vertices.size === 8);
+const loops = new Set();
+for (const edge of bmesh.edges)
+    for (const [radialLink] of edge.radialLinks())
+        for (const [loop] of radialLink.loop.radial())
+            loops.add(loop);
+const loops2 = new Set();
+for (const face of bmesh.faces)
+    for (const [loop] of face.loop.radial())
+        loops2.add(loop);
 // Loops are unique to each face, not shared (4 * 3).
-console.assert(bmesh.loops.size === 12);
+console.assert(loops.size === 12);
+// Ensure we didn't do anything funky like add loops to edges but not faces.
+console.assert(setEquals(loops, loops2));
 let loop = [...bmesh.faces][0].loop.prev;
 console.log(bmesh);
 render();
@@ -113,3 +123,11 @@ function drawMesh(bmesh) {
         Debug.ln.addPoint(e.vertexA.toArray(), e.vertexB.toArray(), deeppink);
 }
 // function onPreRender( dt, et ){}
+function setEquals(a, b) {
+    if (a.size !== b.size)
+        return false;
+    for (const elem of a)
+        if (!b.has(elem))
+            return false;
+    return true;
+}

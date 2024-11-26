@@ -1,6 +1,5 @@
 import { Edge2 } from './Edge2.js'
 import { Face2 } from './Face2.js'
-import { Loop2 } from './Loop2.js'
 import { Vertex2 } from './Vertex2.js'
 
 /**
@@ -13,7 +12,6 @@ import { Vertex2 } from './Vertex2.js'
 export class BMesh2 {
 	vertices: Set<Vertex2> = new Set()
 	edges: Set<Edge2> = new Set()
-	loops: Set<Loop2> = new Set()
 	faces: Set<Face2> = new Set()
 
 	addVertex(vertex: Vertex2): void {
@@ -30,10 +28,6 @@ export class BMesh2 {
 		this.faces.add(face)
 	}
 
-	addLoop(loop: Loop2): void {
-		this.loops.add(loop)
-	}
-
 	// BM_edges_from_verts_ensure
 	edgesFromVerts(...vertices: Vertex2[]): Edge2[] {
 		const edges: Edge2[] = []
@@ -41,10 +35,8 @@ export class BMesh2 {
 		// ensure no duplicate vertices
 		if (vertices.length !== new Set(vertices).size) throw new TypeError('duplicate vertices not allowed')
 
-		console.log('verts:', ...vertices.map(v => v.toArray()))
 		for (const [i, vertex] of vertices.entries()) {
 			const next = vertices[(i + 1) % vertices.length]!
-			console.log('existing edge?', vertex.toArray(), next.toArray(), BMesh2.existingEdge(vertex, next))
 			const edge = BMesh2.existingEdge(vertex, next) ?? new Edge2(this, vertex, next)
 			edges.push(edge)
 		}
@@ -90,10 +82,10 @@ export class BMesh2 {
 		if (!face.loop) return new Error('face has no loop')
 
 		const segments = Array.from(face.loop.radial())
-		if (segments.length !== face.length) return new Error('face length does not match loop length')
+		if (segments.length !== face.edgeCount) return new Error('face length does not match loop length')
 
 		for (const [loop, i] of segments) {
-			const nextLoop = segments[(i + 1) % face.length]![0]
+			const nextLoop = segments[(i + 1) % face.edgeCount]![0]
 			if (nextLoop.prev !== loop) return new Error('reverse loop does not match forward loop')
 			if (loop.face !== nextLoop.face) return new Error('each loop must belong to the same face')
 			if (loop.edge === nextLoop.edge) return new Error('each loop must have a different edge')

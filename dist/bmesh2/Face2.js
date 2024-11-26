@@ -1,7 +1,13 @@
 import { BMesh2 } from './BMesh2.js';
 import { Loop2 } from './Loop2.js';
+import { Edge2 } from './Edge2.js';
 import { Link } from './Link.js';
-export class RadialLink extends Link {
+import { Vertex2 } from './Vertex2.js';
+import { BMeshElement } from './BMeshElement.js';
+/**
+ * To represent a linked list of Loops for faces that share the same edge.
+ */
+export class RadialLoopLink extends Link() {
     next = null;
     prev = null;
     loop;
@@ -10,24 +16,42 @@ export class RadialLink extends Link {
         this.loop = loop;
     }
 }
-export class Face2 {
+export class Face2 extends BMeshElement {
     loop;
-    length;
+    edgeCount;
     // BM_face_create
     constructor(mesh, vertices, edges) {
+        super(mesh);
         Face2.#validateInput(vertices, edges);
-        this.length = vertices.length;
-        this.loop = new Loop2(mesh, this, vertices[0], edges[0]);
+        this.edgeCount = vertices.length;
+        this.loop = this.#createLoop(vertices[0], edges[0]);
         // avoid duplicate faces
         const face = BMesh2.existingFace(vertices);
         if (face)
             return face;
         // Run this *after* the existingFace check, or else existingFace will detect an invalid Loop.
         // edges[0]!.addLoop(this.loop)
-        this.#createLoop(mesh, vertices, edges);
+        this.#createLoops(vertices, edges);
         mesh.addFace(this);
     }
-    #createLoop(mesh, vertices, edges) {
+    // BM_loop_create
+    #createLoop(vertex, edge) {
+        const loop = new Loop2(this, vertex, edge);
+        const link = loop.radialLink;
+        // @ts-expect-error internal write of radialLink
+        if (!edge.radialLink)
+            edge.radialLink = link.next = link.prev = link;
+        // TODO consolidate into Link
+        const last = edge.radialLink.prev;
+        last.next = link;
+        link.prev = last;
+        link.next = edge.radialLink;
+        edge.radialLink.prev = link;
+        // @ts-expect-error internal write of faceCount
+        edge.faceCount++;
+        return loop;
+    }
+    #createLoops(vertices, edges) {
         const start = this.loop;
         let lastLoop = start;
         for (const [i, vert] of vertices.entries()) {
@@ -39,7 +63,7 @@ export class Face2 {
                 throw new TypeError("edge doesn't contain vertex. wrong order?");
             if (!edge.hasVertex(nextVert))
                 throw new TypeError("edge doesn't contain vertex. wrong order?");
-            const loop = new Loop2(mesh, this, vert, edge);
+            const loop = this.#createLoop(vert, edge);
             lastLoop.next = loop;
             loop.prev = lastLoop;
             lastLoop = loop;
@@ -56,5 +80,46 @@ export class Face2 {
             throw new TypeError('duplicate vertices not allowed');
         if (edges.length !== new Set(edges).size)
             throw new TypeError('duplicate edges not allowed');
+    }
+    // BM_face_kill
+    remove() {
+        for (const [loop] of [...this.loop.radial()]) {
+            // for (const [loop] of this.loop.radial(true, false)) {
+            console.log('   -- remove loop link (remove face loop)');
+            this.#removeLoop(loop);
+        }
+        // TODO remove from mesh
+        this.mesh.faces.delete(this);
+    }
+    #removeLoop(loop) {
+        // TODO consolidate into Link
+        let link = loop;
+        let nextLink = link.next;
+        let prevLink = link.prev;
+        link.next = null;
+        link.prev = null;
+        if (prevLink)
+            prevLink.next = nextLink; // if circular, and pointing to itself again, that's fine, it'll be GC'd
+        if (nextLink)
+            nextLink.prev = prevLink;
+        const isLastRemainingRadial = loop.radialLink.next === loop.radialLink;
+        // TODO consolidate into Link
+        link = loop.radialLink;
+        nextLink = link.next;
+        prevLink = link.prev;
+        link.next = null;
+        link.prev = null;
+        if (prevLink)
+            prevLink.next = nextLink; // if circular, and pointing to itself again, that's fine, it'll be GC'd
+        if (nextLink)
+            nextLink.prev = prevLink;
+        // @ts-expect-error internal write of radialLink
+        if (isLastRemainingRadial)
+            loop.edge.radialLink = null;
+        // @ts-expect-error internal write of radialLink
+        else if (loop.edge.radialLink === link)
+            loop.edge.radialLink = nextLink ?? prevLink;
+        // @ts-expect-error internal write of faceCount
+        loop.edge.faceCount--;
     }
 }

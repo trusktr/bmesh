@@ -1,9 +1,14 @@
 import { BMesh2 } from './BMesh2.js';
-import { Loop2 } from './Loop2.js';
-import { Link } from './Link.js';
 import { Vertex2 } from './Vertex2.js';
-import { RadialLink } from './Face2.js';
-export declare class EdgeLink extends Link {
+import { RadialLoopLink } from './Face2.js';
+import { BMeshElement } from './BMeshElement.js';
+declare const EdgeLink_base: {
+    new (...args: any[]): {
+        next: /*elided*/ any | null;
+        prev: /*elided*/ any | null;
+    };
+} & typeof import("./constructor.js").Empty;
+export declare class EdgeLink extends EdgeLink_base {
     next: EdgeLink | null;
     prev: EdgeLink | null;
     readonly edge: Edge2;
@@ -18,34 +23,46 @@ export declare class EdgeLink extends Link {
  * some edges may go from vertexA to vertexB, and others from vertexB to
  * vertexA.
  */
-export declare class Edge2 {
+export declare class Edge2 extends BMeshElement {
+    #private;
     /** The first vertex of this edge (order independent). */
-    vertexA: Vertex2;
+    readonly vertexA: Vertex2;
     /** The second vertex of this edge (order independent). */
-    vertexB: Vertex2;
+    readonly vertexB: Vertex2;
     /**
-     * A circular linked list of Loops, one per face that share this edge.
-     * Unlike with face loops, the order of these loops does not matter.
+     * A circular linked list of Loops, one per face that share this edge (each
+     * linked item is a whole radial for a face, not the items of a single face
+     * radial). Unlike with face loops (the loops of a single radial), the order
+     * of these loops does not matter.
+     *
+     * Don't write this directly, use the Loop constructor.
      */
-    radialLink: RadialLink | null;
-    /** The number of faces that share this edge. */
-    faceCount: number;
+    readonly radialLink: RadialLoopLink | null;
+    /**
+     * The number of faces that share this edge (the number of radial loop links).
+     *
+     * Don't write this directly, use the Face constructor.
+     */
+    readonly faceCount = 0;
     /** A circular linked list of edges connected to vertexA. */
-    edgeLinkA: EdgeLink;
+    readonly edgeLinkA: EdgeLink;
     /** A circular linked list of edges connected to vertexB. */
-    edgeLinkB: EdgeLink;
+    readonly edgeLinkB: EdgeLink;
     constructor(mesh: BMesh2, vertA: Vertex2, vertB: Vertex2);
     hasVertex(vertex: Vertex2): boolean;
     otherVertex(vertex: Vertex2): Vertex2;
-    addLoop(loop: Loop2): RadialLink;
     nextEdgeLink(vertex: Vertex2, forward?: boolean): EdgeLink;
     prevEdgeLink(vertex: Vertex2): EdgeLink;
     /**
-     * Iterate all the Loops of the current radial loop (the current face, the
-     * current circular linked list).
+     * Iterate all the Loops of the current face loop (current circular linked
+     * list for the face).
      */
-    radialLinks(): Generator<[link: RadialLink, index: number], void, void>;
+    radialLinks(forward?: boolean, check?: boolean): Generator<[link: RadialLoopLink, index: number], void, void>;
+    radialLinksReverse(check?: boolean): Generator<[link: RadialLoopLink, index: number], void, void>;
+    /** Remove this edge from the mesh, also removing any faces and loops. */
+    remove(): void;
 }
 export declare class InvalidRadialLinkError extends Error {
     constructor();
 }
+export {};

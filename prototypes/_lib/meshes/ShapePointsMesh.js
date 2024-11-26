@@ -93,7 +93,6 @@ export class ShapePointsMesh extends THREE.Points{
         const bColor    = geo.attributes.color;     //this.geometry.index;
         const bConfig   = geo.attributes.config;
         const bPerspective   = geo.attributes.perspective;
-        console.log('update geometry', bConfig, bPerspective);
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         if( this._verts.length  > bVerts.array.length || 

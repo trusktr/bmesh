@@ -1,16 +1,23 @@
+import { BMesh2 } from './BMesh2.js';
+import { BMeshElement } from './BMeshElement.js';
 import { EdgeLink } from './Edge2.js';
-export class Vertex2 {
+export class Vertex2 extends BMeshElement {
     x;
     y;
     z;
-    /** All edges that are connected to this vertex. */
-    // edges: Set<Edge2> = new Set()
-    /** A circular linked list of edges that are connected to this vertex. */
+    /**
+     * A circular linked list of edges that are connected to this vertex.
+     * Do not modify this directly, use the Edge constructor.
+     */
     edgeLink = null;
-    /** The number of edges that share this vertex. */
+    /**
+     * The number of edges that share this vertex.
+     * Do not modify this directly, use the Edge constructor.
+     */
     edgeCount = 0;
     // BM_vert_create
     constructor(mesh, x = 0, y = 0, z = 0) {
+        super(mesh);
         this.x = x;
         this.y = y;
         this.z = z;
@@ -19,31 +26,37 @@ export class Vertex2 {
     toArray() {
         return [this.x, this.y, this.z];
     }
-    *edgeLinks() {
+    *edgeLinks(forward = true, check = true) {
         if (!this.edgeLink)
             return;
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         let link = this.edgeLink;
+        let next;
+        let prev;
+        // let nextPrev: EdgeLink | null
+        // let prevNext: EdgeLink | null
         let i = 0;
         do {
             if (!link)
                 throw new InvalidEdgeLinkError();
+            // handle deleting during iteration
+            next = link.next;
+            prev = link.prev;
+            // nextPrev = next?.prev
+            // prevNext = prev?.next
             yield [link, i++];
-        } while ((link = link.next) != this.edgeLink);
+        } while ((link = forward ? next : prev) != this.edgeLink && (check || (!check && link)));
     }
-    /** Add an edge to the linked list of edges connected to this vertex. */
-    addEdge(edge) {
-        // if (!edge.hasVertex(this))
-        const link = new EdgeLink(edge);
-        if (!this.edgeLink)
-            this.edgeLink = link.next = link.prev = link;
-        const last = this.edgeLink.prev;
-        last.next = link;
-        link.prev = last;
-        link.next = this.edgeLink;
-        this.edgeLink.prev = link;
-        this.edgeCount++;
-        return link;
+    // BM_vert_kill
+    /** Remove this vertex from the mesh, also removing any connected edges, faces, and loops. */
+    remove() {
+        for (const [link] of [...this.edgeLinks()]) {
+            // for (const [link] of this.edgeLinks(true, false)) {
+            console.log(' ---- remove edge link (remove edge)');
+            link.edge.remove();
+        }
+        // TODO remove vertex from mesh
+        this.mesh.vertices.delete(this);
     }
 }
 export class InvalidEdgeLinkError extends Error {

@@ -1,8 +1,40 @@
 canvas {
 	display: block;
+	position: absolute;
 }
 body,
 html {
 	margin: 0;
 	height: 100%;
+	font-family: sans-serif;
+}
+
+.btns {
+	position: absolute;
+	top: 10px;
+	left: 50%;
+	transform: translateX(-50%);
+	display: flex;
+	gap: 10px;
+}
+
+.btn {
+	user-select: none;
+	cursor: pointer;
+	background: linear-gradient(135deg, #e0e0e0, #f0f0f0); /* Neutral colors */
+	border: none;
+	border-radius: 6px;
+	padding: 6px 14px;
+	color: #555;
+	transition: all 0.3s ease;
+
+	&:hover {
+		background: linear-gradient(135deg, #d3d3d3, #e0e0e0); /* Subtle gray colors */
+		color: #333; /* darken text color a tad on hover */
+	}
+
+	&:active {
+		background: linear-gradient(135deg, #c0c0c0, #d0d0d0); /* Even more subtle gray colors */
+		color: #333; /* darken text color a tad on hover */
+	}
 }
