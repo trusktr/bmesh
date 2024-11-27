@@ -1,7 +1,7 @@
 import { BMesh2 } from './BMesh2.js'
 import { Loop2 } from './Loop2.js'
 import { Edge2 } from './Edge2.js'
-import { Link, type AnyLink } from './Link.js'
+import { Link } from './Link.js'
 import { Vertex2 } from './Vertex2.js'
 import { BMeshElement } from './BMeshElement.js'
 
@@ -9,8 +9,9 @@ import { BMeshElement } from './BMeshElement.js'
  * To represent a linked list of Loops for faces that share the same edge.
  */
 export class RadialLoopLink extends Link() {
-	override next: RadialLoopLink | null = null
-	override prev: RadialLoopLink | null = null
+	override next: RadialLoopLink = this
+	override prev: RadialLoopLink = this
+	override circular = true
 	readonly loop: Loop2
 
 	constructor(loop: Loop2) {
@@ -46,17 +47,12 @@ export class Face2 extends BMeshElement {
 	// BM_loop_create
 	#createLoop(vertex: Vertex2, edge: Edge2): Loop2 {
 		const loop = new Loop2(this, vertex, edge)
-		const link = loop.radialLink
+		const newLink = loop.radialLink
 
 		// @ts-expect-error internal write of radialLink
-		if (!edge.radialLink) edge.radialLink = link.next = link.prev = link
+		if (!edge.radialLink) edge.radialLink = newLink
 
-		// TODO consolidate into Link
-		const last = edge.radialLink.prev!
-		last.next = link
-		link.prev = last
-		link.next = edge.radialLink
-		edge.radialLink.prev = link
+		edge.radialLink.insertBefore(newLink)
 
 		// @ts-expect-error internal write of faceCount
 		edge.faceCount++
@@ -79,13 +75,9 @@ export class Face2 extends BMeshElement {
 
 			const loop = this.#createLoop(vert, edge)
 
-			lastLoop.next = loop
-			loop.prev = lastLoop
+			lastLoop.insertAfter(loop)
 			lastLoop = loop
 		}
-
-		start.prev = lastLoop
-		lastLoop.next = start
 	}
 
 	static #validateInput(vertices: Vertex2[], edges: Edge2[]): void {
@@ -97,41 +89,21 @@ export class Face2 extends BMeshElement {
 
 	// BM_face_kill
 	remove(): void {
-		for (const [loop] of [...this.loop.radial()]) {
-			// for (const [loop] of this.loop.radial(true, false)) {
-			console.log('   -- remove loop link (remove face loop)')
-			this.#removeLoop(loop)
-		}
+		for (const [loop] of [...this.loop]) this.#removeLoop(loop)
 
-		// TODO remove from mesh
 		this.mesh.faces.delete(this)
 	}
 
 	#removeLoop(loop: Loop2): void {
-		// TODO consolidate into Link
-		let link: AnyLink = loop
-		let nextLink = link.next
-		let prevLink = link.prev
-		link.next = null
-		link.prev = null
-		if (prevLink) prevLink.next = nextLink // if circular, and pointing to itself again, that's fine, it'll be GC'd
-		if (nextLink) nextLink.prev = prevLink
+		loop.unlink()
 
 		const isLastRemainingRadial = loop.radialLink.next === loop.radialLink
-
-		// TODO consolidate into Link
-		link = loop.radialLink
-		nextLink = link.next
-		prevLink = link.prev
-		link.next = null
-		link.prev = null
-		if (prevLink) prevLink.next = nextLink // if circular, and pointing to itself again, that's fine, it'll be GC'd
-		if (nextLink) nextLink.prev = prevLink
-
+		const { next: nextLink, prev: prevLink } = loop.radialLink
+		loop.radialLink.unlink()
 		// @ts-expect-error internal write of radialLink
 		if (isLastRemainingRadial) loop.edge.radialLink = null
 		// @ts-expect-error internal write of radialLink
-		else if (loop.edge.radialLink === link) loop.edge.radialLink = nextLink ?? prevLink
+		else if (loop.edge.radialLink === loop.radialLink) loop.edge.radialLink = nextLink ?? prevLink
 
 		// @ts-expect-error internal write of faceCount
 		loop.edge.faceCount--

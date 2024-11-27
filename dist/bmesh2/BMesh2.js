@@ -42,8 +42,8 @@ export class BMesh2 {
     static existingFace(vertices) {
         if (!vertices[0])
             return null;
-        for (const [edgeLink] of vertices[0].edgeLinks()) {
-            for (const [radialLink] of edgeLink.edge.radialLinks()) {
+        for (const [edgeLink] of vertices[0].edgeLink ?? []) {
+            for (const [radialLink] of edgeLink.edge.radialLink ?? []) {
                 // check both directions, as we don't know which order `vertices` is in
                 if (radialLink.loop.verticesMatch(vertices, false))
                     return radialLink.loop.face;
@@ -61,8 +61,8 @@ export class BMesh2 {
         if (!vertA.edgeLink || !vertB.edgeLink)
             return null;
         // Iterate over the smaller set of edges.
-        const edgeLinks = vertA.edgeCount < vertB.edgeCount ? vertA.edgeLinks() : vertB.edgeLinks();
-        for (const [link] of edgeLinks) //
+        const edgeLink = vertA.edgeCount < vertB.edgeCount ? vertA.edgeLink : vertB.edgeLink;
+        for (const [link] of edgeLink) //
             if (link.edge.hasVertex(vertA) && link.edge.hasVertex(vertB))
                 return link.edge;
         return null;
@@ -72,7 +72,7 @@ export class BMesh2 {
     static validateLoop(face) {
         if (!face.loop)
             return new Error('face has no loop');
-        const segments = Array.from(face.loop.radial());
+        const segments = Array.from(face.loop.links());
         if (segments.length !== face.edgeCount)
             return new Error('face length does not match loop length');
         for (const [loop, i] of segments) {

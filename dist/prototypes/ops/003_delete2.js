@@ -129,7 +129,7 @@ function deleteFace() {
     render();
 }
 function renderFace(f) {
-    const avg = vec3.avg(...[...f.loop.radial()].map(([l]) => l.vertex.toArray()));
+    const avg = vec3.avg(...[...f.loop].map(([l]) => l.vertex.toArray()));
     const pointSize = 7;
     Debug.pnt.addPoint(avg, yellow, pointSize, 2);
 }

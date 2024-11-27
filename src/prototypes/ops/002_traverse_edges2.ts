@@ -41,10 +41,10 @@ console.assert(bmesh.vertices.size === 8)
 
 const loops = new Set<Loop2>()
 for (const edge of bmesh.edges)
-	for (const [radialLink] of edge.radialLinks()) for (const [loop] of radialLink.loop.radial()) loops.add(loop)
+	for (const [radialLink] of edge.radialLink ?? []) for (const [loop] of radialLink.loop.links()) loops.add(loop)
 
 const loops2 = new Set<Loop2>()
-for (const face of bmesh.faces) for (const [loop] of face.loop.radial()) loops2.add(loop)
+for (const face of bmesh.faces) for (const [loop] of face.loop.links()) loops2.add(loop)
 
 // Loops are unique to each face, not shared (4 * 3).
 console.assert(loops.size === 12)
@@ -94,7 +94,7 @@ function render() {
 }
 
 function renderFace() {
-	const avg = vec3.avg(...[...loop.radial()].map(([l]) => l.vertex.toArray()))
+	const avg = vec3.avg(...[...loop.links()].map(([l]) => l.vertex.toArray()))
 	const pointSize = 7
 	Debug.pnt.addPoint(avg, yellow, pointSize, 2)
 }
@@ -122,7 +122,7 @@ function radialPrev() {
 // function drawFace(f: Face2, lineColor = deeppink) {
 // 	// const offset = Math.random()
 // 	const offset = 0
-// 	for (const [l] of f.loop.radial()) {
+// 	for (const [l] of f.loop.links()) {
 // 		const pointSize = 5
 // 		Debug.pnt.addPoint(vec3.add(l.vertex.toArray(), [offset, offset, offset]), deeppink, pointSize)
 // 		Debug.ln.addPoint(

@@ -34,46 +34,11 @@ export class Vertex2 extends BMeshElement {
 		return [this.x, this.y, this.z]
 	}
 
-	*edgeLinks(forward = true, check = true): Generator<[link: EdgeLink, index: number], void, void> {
-		if (!this.edgeLink) return
-
-		// eslint-disable-next-line @typescript-eslint/no-this-alias
-		let link: EdgeLink | null = this.edgeLink
-		let next: EdgeLink | null
-		let prev: EdgeLink | null
-		// let nextPrev: EdgeLink | null
-		// let prevNext: EdgeLink | null
-		let i = 0
-
-		do {
-			if (!link) throw new InvalidEdgeLinkError()
-
-			// handle deleting during iteration
-			next = link.next
-			prev = link.prev
-			// nextPrev = next?.prev
-			// prevNext = prev?.next
-
-			yield [link, i++]
-		} while ((link = forward ? next : prev) != this.edgeLink && (check || (!check && link)))
-	}
-
 	// BM_vert_kill
 	/** Remove this vertex from the mesh, also removing any connected edges, faces, and loops. */
 	remove(): void {
-		for (const [link] of [...this.edgeLinks()]) {
-			// for (const [link] of this.edgeLinks(true, false)) {
-			console.log(' ---- remove edge link (remove edge)')
-			link.edge.remove()
-		}
+		for (const [link] of [...(this.edgeLink ?? [])]) link.edge.remove()
 
-		// TODO remove vertex from mesh
 		this.mesh.vertices.delete(this)
-	}
-}
-
-export class InvalidEdgeLinkError extends Error {
-	constructor() {
-		super('Invalid EdgeLink loop detected. EdgeLinks should form a circular linked list.')
 	}
 }

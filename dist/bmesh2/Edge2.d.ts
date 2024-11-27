@@ -3,14 +3,22 @@ import { Vertex2 } from './Vertex2.js';
 import { RadialLoopLink } from './Face2.js';
 import { BMeshElement } from './BMeshElement.js';
 declare const EdgeLink_base: {
-    new (...args: any[]): {
+    new (...a: any[]): {
         next: /*elided*/ any | null;
         prev: /*elided*/ any | null;
+        circular: boolean;
+        insertAfter(link: /*elided*/ any): void;
+        insertBefore(link: /*elided*/ any): void;
+        unlink(): void;
+        links(forward?: boolean, check?: boolean): Generator<[loop: /*elided*/ any, index: number], void, void>;
+        linksReverse(check?: boolean): Generator<[loop: /*elided*/ any, index: number], void, void>;
+        [Symbol.iterator]: (forward?: boolean, check?: boolean) => Generator<[loop: /*elided*/ any, index: number], void, void>;
     };
 } & typeof import("./constructor.js").Empty;
 export declare class EdgeLink extends EdgeLink_base {
-    next: EdgeLink | null;
-    prev: EdgeLink | null;
+    next: EdgeLink;
+    prev: EdgeLink;
+    circular: boolean;
     readonly edge: Edge2;
     constructor(edge: Edge2);
 }
@@ -53,16 +61,7 @@ export declare class Edge2 extends BMeshElement {
     otherVertex(vertex: Vertex2): Vertex2;
     nextEdgeLink(vertex: Vertex2, forward?: boolean): EdgeLink;
     prevEdgeLink(vertex: Vertex2): EdgeLink;
-    /**
-     * Iterate all the Loops of the current face loop (current circular linked
-     * list for the face).
-     */
-    radialLinks(forward?: boolean, check?: boolean): Generator<[link: RadialLoopLink, index: number], void, void>;
-    radialLinksReverse(check?: boolean): Generator<[link: RadialLoopLink, index: number], void, void>;
     /** Remove this edge from the mesh, also removing any faces and loops. */
     remove(): void;
-}
-export declare class InvalidRadialLinkError extends Error {
-    constructor();
 }
 export {};

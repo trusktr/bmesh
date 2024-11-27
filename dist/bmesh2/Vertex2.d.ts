@@ -17,10 +17,6 @@ export declare class Vertex2 extends BMeshElement {
     readonly edgeCount = 0;
     constructor(mesh: BMesh2, x?: number, y?: number, z?: number);
     toArray(): [number, number, number];
-    edgeLinks(forward?: boolean, check?: boolean): Generator<[link: EdgeLink, index: number], void, void>;
     /** Remove this vertex from the mesh, also removing any connected edges, faces, and loops. */
     remove(): void;
-}
-export declare class InvalidEdgeLinkError extends Error {
-    constructor();
 }

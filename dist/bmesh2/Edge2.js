@@ -1,11 +1,12 @@
 import { BMesh2 } from './BMesh2.js';
-import { Link } from './Link.js';
-import { InvalidEdgeLinkError, Vertex2 } from './Vertex2.js';
+import { Link, NonCircularError } from './Link.js';
+import { Vertex2 } from './Vertex2.js';
 import { RadialLoopLink } from './Face2.js';
 import { BMeshElement } from './BMeshElement.js';
 export class EdgeLink extends Link() {
-    next = null;
-    prev = null;
+    next = this;
+    prev = this;
+    circular = true;
     edge;
     constructor(edge) {
         super();
@@ -94,83 +95,39 @@ export class Edge2 extends BMeshElement {
         if (next === undefined)
             throw new TypeError('vertex is not from this edge');
         if (!next)
-            throw new InvalidEdgeLinkError();
+            throw new NonCircularError();
         return next;
     }
     prevEdgeLink(vertex) {
         return this.nextEdgeLink(vertex, false);
     }
-    /**
-     * Iterate all the Loops of the current face loop (current circular linked
-     * list for the face).
-     */
-    *radialLinks(forward = true, check = true) {
-        if (!this.radialLink)
-            return;
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        let link = this.radialLink;
-        let i = 0;
-        do {
-            if (!link)
-                throw new InvalidRadialLinkError();
-            yield [link, i++];
-        } while ((link = forward ? link.next : link.prev) != this.radialLink && (check || (!check && link)));
-    }
-    *radialLinksReverse(check = true) {
-        yield* this.radialLinks(false, check);
-    }
     // BM_edge_kill
     /** Remove this edge from the mesh, also removing any faces and loops. */
     remove() {
-        for (const [link] of [...this.radialLinks()]) {
-            // for (const [link] of this.radialLinks(true, false)) {
-            console.log('  --- remove radial link (remove face)');
+        for (const [link] of [...(this.radialLink ?? [])])
             link.loop.face.remove();
-        }
         let isLastRemainingEdge = this.edgeLinkA.next === this.edgeLinkA;
-        // TODO consolidate into Link
-        let link = this.edgeLinkA;
-        let nextLink = link.next;
-        let prevLink = link.prev;
-        link.next = null;
-        link.prev = null;
-        if (prevLink)
-            prevLink.next = nextLink; // if circular, and pointing to itself again, that's fine, it'll be GC'd
-        if (nextLink)
-            nextLink.prev = prevLink;
+        let { next: nextLink, prev: prevLink } = this.edgeLinkA;
+        this.edgeLinkA.unlink();
         // @ts-expect-error internal write of edgeLink
         if (isLastRemainingEdge)
             this.vertexA.edgeLink = null;
         // @ts-expect-error internal write of edgeLink
-        else if (this.vertexA.edgeLink === link)
+        else if (this.vertexA.edgeLink === this.edgeLinkA)
             this.vertexA.edgeLink = nextLink ?? prevLink;
         // @ts-expect-error internal write of edgeCount
         this.vertexA.edgeCount--;
         isLastRemainingEdge = this.edgeLinkB.next === this.edgeLinkB;
-        // TODO consolidate into Link
-        link = this.edgeLinkB;
-        nextLink = link.next;
-        prevLink = link.prev;
-        link.next = null;
-        link.prev = null;
-        if (prevLink)
-            prevLink.next = nextLink; // if circular, and pointing to itself again, that's fine, it'll be GC'd
-        if (nextLink)
-            nextLink.prev = prevLink;
+        ({ next: nextLink, prev: prevLink } = this.edgeLinkB);
+        this.edgeLinkB.unlink();
         // @ts-expect-error internal write of edgeLink
         if (isLastRemainingEdge)
             this.vertexB.edgeLink = null;
         // @ts-expect-error internal write of edgeLink
-        else if (this.vertexB.edgeLink === link)
+        else if (this.vertexB.edgeLink === this.edgeLinkB)
             this.vertexB.edgeLink = nextLink ?? prevLink;
         // @ts-expect-error internal write of edgeCount
         this.vertexB.edgeCount--;
-        // TODO remove from mesh
         this.mesh.edges.delete(this);
-    }
-}
-export class InvalidRadialLinkError extends Error {
-    constructor() {
-        super('Invalid RadialLink loop detected. RadialLinks should form a circular linked list.');
     }
 }
