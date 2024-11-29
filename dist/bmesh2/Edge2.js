@@ -106,28 +106,22 @@ export class Edge2 extends BMeshElement {
     remove() {
         for (const [link] of [...(this.radialLink ?? [])])
             link.loop.face.remove();
-        let isLastRemainingEdge = this.edgeLinkA.next === this.edgeLinkA;
-        let { next: nextLink, prev: prevLink } = this.edgeLinkA;
-        this.edgeLinkA.unlink();
-        // @ts-expect-error internal write of edgeLink
-        if (isLastRemainingEdge)
-            this.vertexA.edgeLink = null;
-        // @ts-expect-error internal write of edgeLink
-        else if (this.vertexA.edgeLink === this.edgeLinkA)
-            this.vertexA.edgeLink = nextLink ?? prevLink;
-        // @ts-expect-error internal write of edgeCount
-        this.vertexA.edgeCount--;
-        isLastRemainingEdge = this.edgeLinkB.next === this.edgeLinkB;
-        ({ next: nextLink, prev: prevLink } = this.edgeLinkB);
-        this.edgeLinkB.unlink();
-        // @ts-expect-error internal write of edgeLink
-        if (isLastRemainingEdge)
-            this.vertexB.edgeLink = null;
-        // @ts-expect-error internal write of edgeLink
-        else if (this.vertexB.edgeLink === this.edgeLinkB)
-            this.vertexB.edgeLink = nextLink ?? prevLink;
-        // @ts-expect-error internal write of edgeCount
-        this.vertexB.edgeCount--;
+        this.#removeEdgeLink(this.edgeLinkA, this.vertexA);
+        this.#removeEdgeLink(this.edgeLinkB, this.vertexB);
         this.mesh.edges.delete(this);
+    }
+    // bmesh_disk_edge_remove
+    #removeEdgeLink(edgeLink, vertex) {
+        const isLastRemainingEdge = edgeLink.next === edgeLink;
+        const { next: nextLink, prev: prevLink } = edgeLink;
+        edgeLink.unlink();
+        // @ts-expect-error internal write of edgeLink
+        if (isLastRemainingEdge)
+            vertex.edgeLink = null;
+        // @ts-expect-error internal write of edgeLink
+        else if (vertex.edgeLink === edgeLink)
+            vertex.edgeLink = nextLink ?? prevLink;
+        // @ts-expect-error internal write of edgeCount
+        vertex.edgeCount--;
     }
 }
