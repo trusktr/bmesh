@@ -1,23 +1,31 @@
-import Vertex from './ds/Vertex.js';
-import Edge from './ds/Edge.js';
-import Loop from './ds/Loop.js';
-import Face from './ds/Face.js';
+import { Edge } from './Edge.js';
+import { Face } from './Face.js';
+import { Vertex } from './Vertex.js';
+/**
+ * This is a port of Blender's BMesh data structure to JavaScript, but without
+ * anything specific to rendering such as normals or material indices. Maybe
+ * we'll add normals later if it would be useful for JS 3D engines like Threejs
+ * or PlayCanvas to copy them from a bmesh, but for now they can generate their
+ * own.
+ */
 export declare class BMesh {
-    vertices: Array<Vertex>;
-    edges: Array<Edge>;
-    loops: Array<Loop>;
-    faces: Array<Face>;
-    addVertex(pos: Array<number>): Vertex;
-    addEdge(v1: Vertex, v2: Vertex): Edge | null;
-    addLoop(v: Vertex, e: Edge, f: Face): Loop;
-    addFace(ary?: Array<Vertex>): Face;
-    removeFace(f: Face): void;
-    removeEdge(e: Edge): void;
-    removeVertex(v: Vertex): void;
-    cleanVert(v: Vertex): void;
-    cleanEdge(e: Edge): void;
-    cleanLoop(l: Loop): void;
-    cleanFace(f: Face): void;
-    cleanArray(itm: any, ary: Array<any>): boolean;
+    vertices: Set<Vertex>;
+    edges: Set<Edge>;
+    faces: Set<Face>;
+    addVertex(vertex: Vertex): void;
+    addEdge(edge: Edge): void;
+    addFace(face: Face): void;
+    edgesFromVerts(...vertices: Vertex[]): Edge[];
+    /**
+     * Returns the face that exists between the given vertices, or null if none.
+     */
+    static existingFace(vertices: Vertex[]): Face | null;
+    /**
+     * Returns the edge that exists between two vertices, or null if none.
+     */
+    static existingEdge(vertA: Vertex, vertB: Vertex): Edge | null;
+    /**
+     * Returns true if a loop is valid, false otherwise.
+     */
+    static validateLoop(face: Face): Error | null;
 }
-export default BMesh;

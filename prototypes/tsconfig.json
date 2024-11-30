@@ -20,5 +20,5 @@
 		"noUncheckedIndexedAccess": true,
 		"noUncheckedSideEffectImports": true
 	},
-	"include": ["./**/*", "../src/prototypes/colors.ts", "../src/prototypes/ops/002_traverse_edges2.ts"]
+	"include": ["./**/*", "../src/prototypes/ops/001_create.js"]
 }

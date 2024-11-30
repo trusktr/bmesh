@@ -1,82 +1,101 @@
-// #region IMPORTS
-import Vertex from './ds/Vertex.js';
-import Edge from './ds/Edge.js';
-import Loop from './ds/Loop.js';
-import Face from './ds/Face.js';
-import CoreOps from './ops/CoreOps.js';
-import QueryOps from './ops/QueryOps.js';
-// #endregion
+import { Edge } from './Edge.js';
+import { Face } from './Face.js';
+import { Vertex } from './Vertex.js';
+/**
+ * This is a port of Blender's BMesh data structure to JavaScript, but without
+ * anything specific to rendering such as normals or material indices. Maybe
+ * we'll add normals later if it would be useful for JS 3D engines like Threejs
+ * or PlayCanvas to copy them from a bmesh, but for now they can generate their
+ * own.
+ */
 export class BMesh {
-    // #region MAIN
-    vertices = [];
-    edges = [];
-    loops = [];
-    faces = [];
-    // #endregion
-    // #region CREATION
-    // BM_vert_create : https://github.com/blender/blender/blob/48e60dcbffd86f3778ce75ab67f95461ffbe319c/source/blender/bmesh/intern/bmesh_core.cc#L45
-    addVertex(pos) {
-        const v = new Vertex(pos);
-        this.vertices.push(v);
-        return v;
+    vertices = new Set();
+    edges = new Set();
+    faces = new Set();
+    addVertex(vertex) {
+        this.vertices.add(vertex);
     }
-    addEdge(v1, v2) {
-        let edge = QueryOps.edgeExists(v1, v2);
-        if (edge)
-            return edge;
-        edge = CoreOps.edgeCreate(v1, v2);
-        if (edge)
-            this.edges.push(edge);
-        return edge;
+    addEdge(edge) {
+        this.edges.add(edge);
     }
-    addLoop(v, e, f) {
-        const loop = CoreOps.loopCreate(v, e, f);
-        this.loops.push(loop);
-        return loop;
+    addFace(face) {
+        const err = BMesh.validateLoop(face);
+        if (err)
+            throw err;
+        this.faces.add(face);
     }
-    addFace(ary) {
-        if (ary)
-            return CoreOps.faceCreateVerts(this, ary);
-        const face = new Face();
-        this.faces.push(face);
-        return face;
+    // BM_edges_from_verts_ensure
+    edgesFromVerts(...vertices) {
+        const edges = [];
+        // ensure no duplicate vertices
+        if (vertices.length !== new Set(vertices).size)
+            throw new TypeError('duplicate vertices not allowed');
+        for (const [i, vertex] of vertices.entries()) {
+            const next = vertices[(i + 1) % vertices.length];
+            const edge = BMesh.existingEdge(vertex, next) ?? new Edge(this, vertex, next);
+            edges.push(edge);
+        }
+        return edges;
     }
-    // #endregion
-    // #region REMOVING
-    removeFace(f) {
-        CoreOps.faceKill(this, f);
+    // BM_face_exists
+    /**
+     * Returns the face that exists between the given vertices, or null if none.
+     */
+    static existingFace(vertices) {
+        if (!vertices[0])
+            return null;
+        for (const diskLink of vertices[0].diskLink ?? []) {
+            for (const radialLink of diskLink.edge.radialLink ?? []) {
+                // check both directions, as we don't know which order `vertices` is in
+                if (radialLink.loop.verticesMatch(vertices, false))
+                    return radialLink.loop.face;
+                if (radialLink.loop.verticesMatchReverse(vertices, false))
+                    return radialLink.loop.face;
+            }
+        }
+        return null;
     }
-    removeEdge(e) {
-        CoreOps.edgeKill(this, e);
+    // BM_edge_exists
+    /**
+     * Returns the edge that exists between two vertices, or null if none.
+     */
+    static existingEdge(vertA, vertB) {
+        if (vertA === vertB)
+            throw new TypeError('edge vertices must be different');
+        if (!vertA.diskLink || !vertB.diskLink)
+            return null;
+        // Iterate over the smaller set of edges.
+        const diskLink = vertA.edgeCount < vertB.edgeCount ? vertA.diskLink : vertB.diskLink;
+        for (const link of diskLink) //
+            if (link.edge.hasVertex(vertA) && link.edge.hasVertex(vertB))
+                return link.edge;
+        return null;
     }
-    removeVertex(v) {
-        CoreOps.vertKill(this, v);
-    }
-    cleanVert(v) {
-        if (!this.cleanArray(v, this.vertices))
-            console.log('Vertex not found for cleanup');
-    }
-    cleanEdge(e) {
-        if (!this.cleanArray(e, this.edges))
-            console.log('Edge not found for cleanup');
-    }
-    cleanLoop(l) {
-        if (!this.cleanArray(l, this.loops))
-            console.log('Loop not found for cleanup');
-    }
-    cleanFace(f) {
-        if (!this.cleanArray(f, this.faces))
-            console.log('Face not found for cleanup');
-    }
-    cleanArray(itm, ary) {
-        const a = ary.indexOf(itm);
-        if (a === -1)
-            return false;
-        const z = ary.length - 1;
-        if (a !== z)
-            ary[a] = ary[z];
-        ary.length = z;
-        return true;
+    // bmesh_loop_validate
+    /**
+     * Returns true if a loop is valid, false otherwise.
+     */
+    static validateLoop(face) {
+        if (!face.loop)
+            return new Error('face has no loop');
+        const loops = [...face.loop];
+        if (loops.length !== face.edgeCount)
+            return new Error('face length does not match loop length');
+        let i = 0;
+        for (const loop of loops) {
+            const nextLoop = loops[(i + 1) % face.edgeCount];
+            if (nextLoop.prev !== loop)
+                return new Error('reverse loop does not match forward loop');
+            if (loop.face !== nextLoop.face)
+                return new Error('each loop must belong to the same face');
+            if (loop.edge === nextLoop.edge)
+                return new Error('each loop must have a different edge');
+            if (loop.vertex === nextLoop.vertex)
+                return new Error('each loop must have a different vertex');
+            if (!(loop.edge.hasVertex(loop.vertex) && loop.edge.hasVertex(nextLoop.vertex)))
+                return new Error('each loop edge should have the vertex of the loop and the next loop');
+            i++;
+        }
+        return null;
     }
 }
-export default BMesh;

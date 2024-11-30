@@ -1,17 +1,20 @@
 {
 	"name": "bmesh",
-	"version": "0.0.1",
-	"author": "Pedro Sousa ( Vor @ SketchPunk Labs )",
-	"description": "",
+	"version": "0.0.0",
+	"description": "Blender's mesh editing system implemented in JavaScript.",
 	"type": "module",
 	"license": "MIT",
-	"homepage": "https://github.com/sketchpunklabs/bmesh#readme",
+	"contributors": [
+		"https://github.com/sketchpunklabs/bmesh/graphs/contributors",
+		"https://github.com/trusktr/bmesh/graphs/contributors"
+	],
+	"homepage": "https://github.com/trusktr/bmesh#readme",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/sketchpunklabs/bmesh.git"
+		"url": "git+https://github.com/trusktr/bmesh.git"
 	},
 	"bugs": {
-		"url": "https://github.com/sketchpunklabs/bmesh/issues"
+		"url": "https://github.com/trusktr/bmesh/issues"
 	},
 	"files": [
 		"dist",
@@ -42,9 +45,15 @@
 	"keywords": [
 		"mesh editing",
 		"threejs",
+		"playcanvas",
+		"babylonjs",
 		"radial edge",
 		"half edge",
 		"modeling",
-		"blender"
+		"blender",
+		"blender3d",
+		"b3d",
+		"webgl",
+		"webgpu"
 	]
 }
