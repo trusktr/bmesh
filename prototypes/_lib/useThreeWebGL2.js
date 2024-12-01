@@ -1,5 +1,5 @@
 // #region IMPORTS
-import { darkerLimeGreen, mediumGray, } from 'bmesh/dist/prototypes/colors.js';
+import { axisColors, darkGray, white } from 'bmesh/dist/prototypes/colors.js';
 import * as THREE           from 'three';
 import { OrbitControls }    from 'three/examples/jsm/controls/OrbitControls.js';
 export { THREE };
@@ -25,20 +25,29 @@ export function useDarkScene( /** @type {App} */ tjs, props={} ){
     const pp = Object.assign( { ambient:0x404040, grid:true, }, props );
 
     // Light
-    const light = new THREE.DirectionalLight( 0xffffff, 1.0 );
+    const light = new THREE.DirectionalLight( white, 1.0 );
     light.position.set( 4, 10, 1 );
     tjs.scene.add( light );
     
     tjs.scene.add( new THREE.AmbientLight( pp.ambient ) );
 
-    const gridAxesColor = darkerLimeGreen;
-    const gridLinesColor = mediumGray;
+    const gridLinesColor = darkGray;
     
     // Floor
-    if( pp.grid ) tjs.scene.add( new THREE.GridHelper( 20, 20, gridAxesColor, gridLinesColor ) );
+    const divisions = 20;
+    const gridHelper = new THREE.GridHelper( 20, divisions, axisColors.z, gridLinesColor );
+    if( pp.grid ) tjs.scene.add( gridHelper );
+
+    // Make X axis red
+    const colorAttr = gridHelper.geometry.attributes.color
+    const center = divisions / 2
+    const color = new THREE.Color( axisColors.x );
+    const index = 3 * 4 * center // math from GridHelper constructor
+    color.toArray( colorAttr.array, index + 0 );
+    color.toArray( colorAttr.array, index + 3 );
 
     // Renderer
-    tjs.renderer.setClearColor( 0x3a3a3a, 1 );
+    tjs.renderer.setClearColor( 0x3f3f3f, 1 );
     return tjs;
 }
 
@@ -91,7 +100,7 @@ export default function useThreeWebGL2( props={} ){
 
     const renderer = new THREE.WebGLRenderer( options );
     renderer.setPixelRatio( window.devicePixelRatio );
-    renderer.setClearColor( 0x3a3a3a, 1 );
+    renderer.setClearColor( 0x3f3f3f, 1 );
     //if( props.preserveDrawingBuffer ){
     // renderer.autoClearColor = false;
     // renderer.autoClearDepth = false;

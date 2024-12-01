@@ -1,5 +1,5 @@
 // Basic creation of a mesh with a face and drawing of vertices and edges.
-import { BMesh, Face, vec3, Vertex } from 'bmesh';
+import { BMesh, Edge, Face, vec3, Vertex } from 'bmesh';
 import { App, Debug } from '../app.js';
 import { deeppink, yellow } from '../colors.js';
 /** @import { Face, Vertex } from 'bmesh' */
@@ -43,8 +43,29 @@ export function drawVertEdges(v) {
 }
 // We could use center of mass instead of average to make this better.
 export function drawFacePoint(face) {
-    const points = [...face.loop].map(l => l.vertex.toArray());
-    const avg = vec3.avg(...points);
     const pointSize = 7;
-    Debug.pnt.addPoint(avg, yellow, pointSize, 2);
+    Debug.pnt.addPoint(centroid(face), yellow, pointSize, 2);
+}
+/** get the centroid of a set of edges */
+export function centroid(face, target = [0, 0, 0]) {
+    let xSum = 0;
+    let ySum = 0;
+    let zSum = 0;
+    let lengthSum = 0;
+    for (const loop of face.loop) {
+        const { x: x1, y: y1, z: z1 } = loop.edge.vertexA;
+        const { x: x2, y: y2, z: z2 } = loop.edge.vertexB;
+        const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2);
+        const midX = (x1 + x2) / 2;
+        const midY = (y1 + y2) / 2;
+        const midZ = (z1 + z2) / 2;
+        xSum += midX * length;
+        ySum += midY * length;
+        zSum += midZ * length;
+        lengthSum += length;
+    }
+    target[0] = xSum / lengthSum;
+    target[1] = ySum / lengthSum;
+    target[2] = zSum / lengthSum;
+    return target;
 }

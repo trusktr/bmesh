@@ -18,6 +18,9 @@ export function Link(BaseClass = Empty) {
          * Set this to true if the linked list is circular.
          */
         circular = false;
+        /**
+         * Insert a Link after this Link in the linked list.
+         */
         insertAfter(link) {
             link.unlink(); // remove from previous list if any
             const next = this.next;
@@ -27,6 +30,9 @@ export function Link(BaseClass = Empty) {
             if (next)
                 next.prev = link;
         }
+        /**
+         * Insert a Link before this Link in the linked list.
+         */
         insertBefore(link) {
             link.unlink(); // remove from previous list if any
             const prev = this.prev;

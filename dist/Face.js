@@ -39,11 +39,9 @@ export class Face extends BMeshElement {
     #createLoop(vertex, edge) {
         const loop = new Loop(this, vertex, edge);
         const newLink = loop.radialLink;
-        // @ts-expect-error internal write of radialLink
         if (!edge.radialLink)
             edge.radialLink = newLink;
         edge.radialLink.insertBefore(newLink);
-        // @ts-expect-error internal write of faceCount
         edge.faceCount++;
         return loop;
     }
@@ -90,13 +88,10 @@ export class Face extends BMeshElement {
         const isLastRemainingRadial = loop.radialLink.next === loop.radialLink;
         const { next: nextLink, prev: prevLink } = loop.radialLink;
         loop.radialLink.unlink();
-        // @ts-expect-error internal write of radialLink
         if (isLastRemainingRadial)
             loop.edge.radialLink = null;
-        // @ts-expect-error internal write of radialLink
         else if (loop.edge.radialLink === loop.radialLink)
             loop.edge.radialLink = nextLink ?? prevLink;
-        // @ts-expect-error internal write of faceCount
         loop.edge.faceCount--;
     }
 }

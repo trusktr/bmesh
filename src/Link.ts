@@ -22,6 +22,9 @@ export function Link<T extends AnyConstructor = typeof Empty>(BaseClass: T = Emp
 		 */
 		circular: boolean = false
 
+		/**
+		 * Insert a Link after this Link in the linked list.
+		 */
 		insertAfter(link: Link) {
 			link.unlink() // remove from previous list if any
 			const next = this.next
@@ -31,6 +34,9 @@ export function Link<T extends AnyConstructor = typeof Empty>(BaseClass: T = Emp
 			if (next) next.prev = link
 		}
 
+		/**
+		 * Insert a Link before this Link in the linked list.
+		 */
 		insertBefore(link: Link) {
 			link.unlink() // remove from previous list if any
 			const prev = this.prev

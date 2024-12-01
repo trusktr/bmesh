@@ -137,7 +137,7 @@ async function main() {
 
 if (location.pathname.endsWith('002_traverse_edges.html')) main()
 
-export function drawMesh(bmesh: BMesh) {
+export function drawMesh(bmesh: BMesh, color = deeppink) {
 	const drawFaces = false
 
 	if (drawFaces) {
@@ -152,8 +152,8 @@ export function drawMesh(bmesh: BMesh) {
 	} else {
 		// This does not duplicate edges/vertices, and it covers non-faces too (f.e. standalone edges)
 		const pointSize = 5
-		for (const v of bmesh.vertices) Debug.pnt.addPoint(v.toArray(), deeppink, pointSize)
-		for (const e of bmesh.edges) Debug.ln.addPoint(e.vertexA.toArray(), e.vertexB.toArray(), deeppink)
+		for (const v of bmesh.vertices) Debug.pnt.addPoint(v.toArray(), color, pointSize)
+		for (const e of bmesh.edges) Debug.ln.addPoint(e.vertexA.toArray(), e.vertexB.toArray(), color)
 	}
 }
 

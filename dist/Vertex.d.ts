@@ -9,12 +9,12 @@ export declare class Vertex extends BMeshElement {
      * A circular linked list of edges that are connected to this vertex.
      * Do not modify this directly, use the Edge constructor.
      */
-    readonly diskLink: DiskLink | null;
+    diskLink: DiskLink | null;
     /**
      * The number of edges that share this vertex.
      * Do not modify this directly, use the Edge constructor.
      */
-    readonly edgeCount = 0;
+    edgeCount: number;
     constructor(mesh: BMesh, x?: number, y?: number, z?: number);
     /**
      * Returns a tuple of the Vertex's xyz values. Pass an array if you want to

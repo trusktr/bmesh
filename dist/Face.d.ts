@@ -31,13 +31,13 @@ export declare class RadialLoopLink extends RadialLoopLink_base {
     next: RadialLoopLink;
     prev: RadialLoopLink;
     circular: boolean;
-    readonly loop: Loop;
+    loop: Loop;
     constructor(loop: Loop);
 }
 export declare class Face extends BMeshElement {
     #private;
-    readonly loop: Loop;
-    readonly edgeCount: number;
+    loop: Loop;
+    edgeCount: number;
     constructor(mesh: BMesh, vertices: Vertex[], edges?: Edge[]);
     /**
      * Remove this face and its loops from the mesh.

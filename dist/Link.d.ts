@@ -10,7 +10,13 @@ export declare function Link<T extends AnyConstructor = typeof Empty>(BaseClass?
          * Set this to true if the linked list is circular.
          */
         circular: boolean;
+        /**
+         * Insert a Link after this Link in the linked list.
+         */
         insertAfter(link: /*elided*/ any): void;
+        /**
+         * Insert a Link before this Link in the linked list.
+         */
         insertBefore(link: /*elided*/ any): void;
         /**
          * Remove this Link from the linked list.

@@ -12,7 +12,8 @@ export class RadialLoopLink extends Link() {
 	override next: RadialLoopLink = this
 	override prev: RadialLoopLink = this
 	override circular = true
-	readonly loop: Loop
+
+	loop: Loop
 
 	constructor(loop: Loop) {
 		super()
@@ -21,8 +22,8 @@ export class RadialLoopLink extends Link() {
 }
 
 export class Face extends BMeshElement {
-	readonly loop: Loop
-	readonly edgeCount: number
+	loop: Loop
+	edgeCount: number
 
 	// BM_face_create
 	constructor(mesh: BMesh, vertices: Vertex[], edges: Edge[] = mesh.edgesFromVerts(...vertices)) {
@@ -49,12 +50,8 @@ export class Face extends BMeshElement {
 		const loop = new Loop(this, vertex, edge)
 		const newLink = loop.radialLink
 
-		// @ts-expect-error internal write of radialLink
 		if (!edge.radialLink) edge.radialLink = newLink
-
 		edge.radialLink.insertBefore(newLink)
-
-		// @ts-expect-error internal write of faceCount
 		edge.faceCount++
 
 		return loop
@@ -104,12 +101,9 @@ export class Face extends BMeshElement {
 		const isLastRemainingRadial = loop.radialLink.next === loop.radialLink
 		const { next: nextLink, prev: prevLink } = loop.radialLink
 		loop.radialLink.unlink()
-		// @ts-expect-error internal write of radialLink
 		if (isLastRemainingRadial) loop.edge.radialLink = null
-		// @ts-expect-error internal write of radialLink
 		else if (loop.edge.radialLink === loop.radialLink) loop.edge.radialLink = nextLink ?? prevLink
 
-		// @ts-expect-error internal write of faceCount
 		loop.edge.faceCount--
 	}
 }

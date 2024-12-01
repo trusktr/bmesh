@@ -30,11 +30,11 @@ export declare class Loop extends Loop_base {
     next: Loop;
     prev: Loop;
     circular: boolean;
-    readonly vertex: Vertex;
-    readonly edge: Edge;
-    readonly face: Face;
+    vertex: Vertex;
+    edge: Edge;
+    face: Face;
     /** A circular linked list of Loops that share the same Edge. This Link contains this Loop. */
-    readonly radialLink: RadialLoopLink;
+    radialLink: RadialLoopLink;
     /** Do not use this constructor directly, use Vertex, Edge, and Face constructors. */
     constructor(face: Face, vertex: Vertex, edge: Edge);
     /**

@@ -3,13 +3,15 @@ import { Link, NonCircularError } from './Link.js'
 import { Vertex } from './Vertex.js'
 import { RadialLoopLink } from './Face.js'
 import { BMeshElement } from './BMeshElement.js'
+import { Loop } from './Loop.js'
 
 /** A circular linked list of edges connected to a vertex. */
 export class DiskLink extends Link() {
 	override next: DiskLink = this
 	override prev: DiskLink = this
 	override circular = true
-	readonly edge: Edge
+
+	edge: Edge
 
 	constructor(edge: Edge) {
 		super()
@@ -28,10 +30,10 @@ export class DiskLink extends Link() {
  */
 export class Edge extends BMeshElement {
 	/** The first vertex of this edge (order independent). */
-	readonly vertexA: Vertex
+	vertexA: Vertex
 
 	/** The second vertex of this edge (order independent). */
-	readonly vertexB: Vertex
+	vertexB: Vertex
 
 	/**
 	 * A circular linked list of Loops, one per face that share this edge (each
@@ -41,20 +43,20 @@ export class Edge extends BMeshElement {
 	 *
 	 * Don't write this directly, use the Loop constructor.
 	 */
-	readonly radialLink: RadialLoopLink | null = null
+	radialLink: RadialLoopLink | null = null
 
 	/**
 	 * The number of faces that share this edge (the number of radial loop links).
 	 *
 	 * Don't write this directly, use the Face constructor.
 	 */
-	readonly faceCount = 0
+	faceCount = 0
 
-	/** A circular linked list of edges connected to vertexA. */
-	readonly diskLinkA!: DiskLink
+	/** A circular linked list of edges connected to vertexA, starting with this Edge. */
+	diskLinkA!: DiskLink
 
-	/** A circular linked list of edges connected to vertexB. */
-	readonly diskLinkB!: DiskLink
+	/** A circular linked list of edges connected to vertexB, starting with this Edge. */
+	diskLinkB!: DiskLink
 
 	// BM_edge_create
 	constructor(mesh: BMesh, vertA: Vertex, vertB: Vertex) {
@@ -79,19 +81,95 @@ export class Edge extends BMeshElement {
 	#associateVert(vert: Vertex): DiskLink {
 		const link = new DiskLink(this)
 
-		// @ts-expect-error internal write of diskLink
-		if (!vert.diskLink) vert.diskLink = link.next = link.prev = link
-
-		const last = vert.diskLink.prev!
-		last.next = link
-		link.prev = last
-		link.next = vert.diskLink
-		vert.diskLink.prev = link
-
-		// @ts-expect-error internal write of edgeCount
+		if (!vert.diskLink) vert.diskLink = link
+		vert.diskLink.insertBefore(link)
 		vert.edgeCount++
 
 		return link
+	}
+
+	// bmesh_kernel_split_edge_make_vert
+	/**
+	 * Split this edge into two edges (one new edge) with a new vertex between
+	 * them. Optionally provide the vertex to place in the middle.
+	 *
+	 * @param existingVert - The existing vertex that is on one end of the edge
+	 * to split. The new Edge will be created between this vertex and the new
+	 * vertex.
+	 *
+	 * @param newVert - The vertex to place in between the old edge and the new
+	 * edge. If not provided, a new Vertex will be created, which will be located at
+	 * the midpoint of the old edge.
+	 *
+	 * @returns A tuple of the new vertex and the new edge.
+	 */
+	split(existingVert: Vertex, newVert?: Vertex): [Vertex, Edge] {
+		if (!this.hasVertex(existingVert)) throw new InvalidVertexError()
+
+		newVert ??= new Vertex(
+			this.mesh,
+			(this.vertexA.x + this.vertexB.x) / 2,
+			(this.vertexA.y + this.vertexB.y) / 2,
+			(this.vertexA.z + this.vertexB.z) / 2,
+		)
+
+		const newEdge = new Edge(this.mesh, existingVert, newVert)
+
+		// Order here matters
+		this.#splitRadialLoops(existingVert, newEdge, newVert)
+		this.#replaceVertex(existingVert, newEdge, newVert)
+
+		return [newVert, newEdge]
+	}
+
+	#splitRadialLoops(existingVert: Vertex, newEdge: Edge, newVert: Vertex): void {
+		let lastNewLoop
+
+		for (const { loop } of this.radialLink ?? []) {
+			if (loop.vertex === existingVert) {
+				// the existing loop is going from existingVert to otherVertex
+
+				loop.vertex = newVert
+				const newLoop = new Loop(loop.face, existingVert, newEdge)
+				loop.insertBefore(newLoop)
+				if (!newEdge.radialLink) newEdge.radialLink = newLoop.radialLink
+				if (lastNewLoop) lastNewLoop.radialLink.insertAfter(newLoop.radialLink)
+				lastNewLoop = newLoop
+			} else if (loop.vertex === this.otherVertex(existingVert)) {
+				// the existing loop is going from otherVertex to existingVert
+
+				const newLoop = new Loop(loop.face, newVert, newEdge)
+				loop.insertAfter(newLoop)
+				if (!newEdge.radialLink) newEdge.radialLink = newLoop.radialLink
+				if (lastNewLoop) lastNewLoop.radialLink.insertAfter(newLoop.radialLink)
+				lastNewLoop = newLoop
+			} else throw new TypeError('loop vertex is not from this edge')
+		}
+	}
+
+	#replaceVertex(existingVert: Vertex, newEdge: Edge, newVert: Vertex): void {
+		// Remove the edge from the old vertex's disk linked list.
+		const diskLink = this.#diskLink(existingVert)
+		this.#removeEdgeLink(diskLink, existingVert)
+
+		// TODO not needed?
+		// if (!existingVert.diskLink) existingVert.diskLink = newEdge.#diskLink(existingVert)
+
+		// Add the edge to the new vertex's disk linked list.
+		// TODO consolidate this with #associateVert
+		if (!newVert.diskLink) newVert.diskLink = diskLink
+		newVert.diskLink.insertBefore(diskLink)
+		newVert.edgeCount++
+
+		if (this.vertexA === existingVert) this.vertexA = newVert
+		else if (this.vertexB === existingVert) this.vertexB = newVert
+		else throw new InvalidVertexError()
+	}
+
+	#diskLink(vertex: Vertex): DiskLink {
+		if (this.vertexA === vertex) return this.diskLinkA
+		if (this.vertexB === vertex) return this.diskLinkB
+		throw new InvalidVertexError()
 	}
 
 	hasVertex(vertex: Vertex): boolean {
@@ -101,14 +179,14 @@ export class Edge extends BMeshElement {
 	otherVertex(vertex: Vertex): Vertex {
 		if (this.vertexA === vertex) return this.vertexB
 		if (this.vertexB === vertex) return this.vertexA
-		throw new TypeError('vertex is not from this edge')
+		throw new InvalidVertexError()
 	}
 
 	nextEdgeLink(vertex: Vertex, forward = true): DiskLink {
-		let next: DiskLink | undefined | null = undefined
+		let next: DiskLink | null = null
 		if (vertex === this.vertexA) next = forward ? this.diskLinkA.next : this.diskLinkA.prev
-		if (vertex === this.vertexB) next = forward ? this.diskLinkB.next : this.diskLinkB.prev
-		if (next === undefined) throw new TypeError('vertex is not from this edge')
+		else if (vertex === this.vertexB) next = forward ? this.diskLinkB.next : this.diskLinkB.prev
+		else throw new InvalidVertexError()
 		if (!next) throw new NonCircularError()
 		return next
 	}
@@ -135,11 +213,14 @@ export class Edge extends BMeshElement {
 		const isLastRemainingEdge = diskLink.next === diskLink
 		const { next: nextLink, prev: prevLink } = diskLink
 		diskLink.unlink()
-		// @ts-expect-error internal write of diskLink
 		if (isLastRemainingEdge) vertex.diskLink = null
-		// @ts-expect-error internal write of diskLink
 		else if (vertex.diskLink === diskLink) vertex.diskLink = nextLink ?? prevLink
-		// @ts-expect-error internal write of edgeCount
 		vertex.edgeCount--
+	}
+}
+
+export class InvalidVertexError extends Error {
+	constructor() {
+		super('vertex is not from this edge')
 	}
 }

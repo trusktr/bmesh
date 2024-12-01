@@ -11,12 +11,13 @@ export class Loop extends Link() {
 	override next: Loop = this
 	override prev: Loop = this
 	override circular = true
-	readonly vertex: Vertex
-	readonly edge: Edge
-	readonly face: Face
+
+	vertex: Vertex
+	edge: Edge
+	face: Face
 
 	/** A circular linked list of Loops that share the same Edge. This Link contains this Loop. */
-	readonly radialLink = new RadialLoopLink(this)
+	radialLink = new RadialLoopLink(this)
 
 	/** Do not use this constructor directly, use Vertex, Edge, and Face constructors. */
 	constructor(face: Face, vertex: Vertex, edge: Edge) {

@@ -11,13 +11,13 @@ export class Vertex extends BMeshElement {
 	 * A circular linked list of edges that are connected to this vertex.
 	 * Do not modify this directly, use the Edge constructor.
 	 */
-	readonly diskLink: DiskLink | null = null
+	diskLink: DiskLink | null = null
 
 	/**
 	 * The number of edges that share this vertex.
 	 * Do not modify this directly, use the Edge constructor.
 	 */
-	readonly edgeCount = 0
+	edgeCount = 0
 
 	// BM_vert_create
 	constructor(mesh: BMesh, x = 0, y = 0, z = 0) {
