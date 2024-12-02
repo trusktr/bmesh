@@ -40,15 +40,26 @@ function main() {
     function initUI() {
         document.getElementById('btnPrev').addEventListener('click', prevEdge);
         document.getElementById('btnNext').addEventListener('click', nextEdge);
-        document.getElementById('btnPrevRadial').addEventListener('click', nextRadial);
-        document.getElementById('btnNextRadial').addEventListener('click', prevRadial);
         document.getElementById('btnFlip').addEventListener('click', flip);
-        document.getElementById('btnDelVert').addEventListener('click', deleteVert);
-        document.getElementById('btnDelEdge').addEventListener('click', deleteEdge);
-        document.getElementById('btnDelFace').addEventListener('click', deleteFace);
-        document.getElementById('btnSplitEdge').addEventListener('click', splitEdge);
+        document.getElementById('btnExtrude').addEventListener('click', extrudeVert);
     }
     function update() {
+        validate();
+        Debug.pnt.reset();
+        Debug.ln.reset();
+        drawMesh(bmesh, black);
+        if (loop)
+            drawFaceVertsEdges(loop.face, plumParadise);
+        const vertA = vert;
+        const vertB = vertA ? edge?.otherVertex(vertA) : null;
+        if (vertA)
+            Debug.pnt.addPoint(vertA.toArray(), cyan, 6);
+        if (vertA && vertB)
+            Debug.ln.addPoint(vertA.toArray(), vertB.toArray(), cyan, deeppink);
+        for (const f of bmesh.faces)
+            drawFacePoint(f);
+    }
+    function validate() {
         if (loop && !edge)
             throw new Error('state sync error');
         if (edge && !vert)
@@ -70,9 +81,6 @@ function main() {
             if (err)
                 throw err;
         }
-        Debug.pnt.reset();
-        Debug.ln.reset();
-        drawMesh(bmesh, black);
         if (loop) {
             let err = BMesh.validateLoop(loop.face);
             if (err)
@@ -80,16 +88,7 @@ function main() {
             err = BMesh.validateRadial(loop);
             if (err)
                 throw err;
-            drawFaceVertsEdges(loop.face, plumParadise);
         }
-        const vertA = vert;
-        const vertB = vertA ? edge?.otherVertex(vertA) : null;
-        if (vertA)
-            Debug.pnt.addPoint(vertA.toArray(), cyan, 6);
-        if (vertA && vertB)
-            Debug.ln.addPoint(vertA.toArray(), vertB.toArray(), cyan, deeppink);
-        for (const f of bmesh.faces)
-            drawFacePoint(f);
     }
     function nextEdge() {
         if (!edge || !vert)
@@ -105,89 +104,18 @@ function main() {
         loop = edge?.radialLink?.loop;
         update();
     }
-    function nextRadial() {
-        loop = loop?.radialLink.next.loop;
-        update();
-    }
-    function prevRadial() {
-        loop = loop?.radialLink.prev.loop;
-        update();
-    }
     function flip() {
         if (!edge || !vert)
             return;
         vert = edge.otherVertex(vert);
         update();
     }
-    function deleteVert() {
+    function extrudeVert() {
         if (!vert)
             return;
-        const oldVert = vert;
-        if (!vert.edgeCount) {
-            // If we're on a lone vert jump to some other vert (or undefined if
-            // there are no other verts to avoid erroneously rendering the last
-            // vert selection).
-            const verts = bmesh.vertices.values();
-            vert = verts.next().value;
-            if (vert === oldVert)
-                vert = verts.next().value;
-        }
-        else {
-            // not lone vert, just swap to the next edge vert
-            vert = edge.otherVertex(vert);
-        }
-        oldVert.remove();
-        edge = vert?.diskLink?.edge;
+        vert = vert.extrude(0, 0, 0);
+        edge = vert.diskLink?.edge;
         loop = edge?.radialLink?.loop;
-        update();
-    }
-    function deleteEdge() {
-        if (!edge)
-            return;
-        const oldEdge = edge;
-        // If the current edge is the last edge of the current vert, switch to the
-        // other vert, otherwise we'll get stuck on a lone vert with no edges (and
-        // we don't have click-to-select yet).
-        let nextEdge = edge.nextEdgeLink(vert).edge;
-        let isLastEdge = edge === nextEdge;
-        if (isLastEdge)
-            vert = edge.otherVertex(vert);
-        edge = edge.nextEdgeLink(vert).edge;
-        // If the current edge is also the last edge of the second vert (i.e. the
-        // current edge is a lone edge), dereference it otherwise we'll keep
-        // erroneously rendering the edge selection and won't let the deleted edge
-        // be GC'd.
-        nextEdge = edge.nextEdgeLink(vert).edge;
-        isLastEdge = edge === nextEdge;
-        if (isLastEdge)
-            edge = undefined;
-        oldEdge.remove();
-        loop = edge?.radialLink?.loop;
-        update();
-    }
-    function deleteFace() {
-        loop?.face?.remove();
-        loop = edge?.radialLink?.loop;
-        update();
-    }
-    function splitEdge() {
-        if (vert && edge)
-            edge.split(edge.otherVertex(vert));
-        update();
-    }
-    function moveVertX(delta) {
-        if (vert)
-            vert.x += delta;
-        update();
-    }
-    function moveVertY(delta) {
-        if (vert)
-            vert.y += delta;
-        update();
-    }
-    function moveVertZ(delta) {
-        if (vert)
-            vert.z += delta;
         update();
     }
     /** Iterate vertex edges with right/left. Iterate radials with up/down. Delete edges with 'e', faces with 'c', and vertices with 'v'. Use WASD to move the current vertex on X and Z. Use Q and E to move along Y. */
@@ -199,44 +127,11 @@ function main() {
             else if (e.key === 'ArrowLeft' || e.key === 'k') {
                 prevEdge();
             }
-            else if (e.key === 'ArrowUp' || e.key === 'l') {
-                nextRadial();
-            }
-            else if (e.key === 'ArrowDown' || e.key === 'h') {
-                prevRadial();
-            }
             else if (e.key === 'f') {
                 flip();
             }
-            else if (e.key === 'v') {
-                deleteVert();
-            }
-            else if (e.key === 'x') {
-                deleteEdge();
-            }
-            else if (e.key === 'c') {
-                deleteFace();
-            }
-            else if (e.key === '/') {
-                splitEdge();
-            }
-            else if (e.key === 'w') {
-                moveVertZ(-0.1);
-            }
-            else if (e.key === 's') {
-                moveVertZ(0.1);
-            }
-            else if (e.key === 'a') {
-                moveVertX(-0.1);
-            }
-            else if (e.key === 'd') {
-                moveVertX(0.1);
-            }
-            else if (e.key === 'q') {
-                moveVertY(-0.1);
-            }
             else if (e.key === 'e') {
-                moveVertY(0.1);
+                extrudeVert();
             }
         });
         // Hold shift and drag to move the current vertex on parallel to the screen.
@@ -250,7 +145,7 @@ function main() {
         });
     }
 }
-if (location.pathname.endsWith('004_split_edge.html'))
+if (location.pathname.endsWith('005_extrude_vert.html'))
     main();
 // Assuming you have a camera and a vector3
 const camRight = new Vector3();

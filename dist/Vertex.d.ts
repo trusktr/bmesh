@@ -21,6 +21,11 @@ export declare class Vertex extends BMeshElement {
      */
     edgeCount: number;
     constructor(mesh: BMesh, x?: number, y?: number, z?: number);
+    /**
+     * Create a new vertex at the given offset from this vertex, and connect
+     * them. The UI will call this, then the user will move the new vertex.
+     */
+    extrude(x?: number, y?: number, z?: number): Vertex;
     includesEdge(edge: Edge): boolean;
     /**
      * Returns a tuple of the Vertex's xyz values. Pass an array if you want to

@@ -50,6 +50,17 @@ export class Vertex extends BMeshElement {
 		mesh.addVertex(this)
 	}
 
+	// bmo_extrude_vert_indiv_exec (but for one vertex only, the UI operations call it with multiple selected vertices)
+	/**
+	 * Create a new vertex at the given offset from this vertex, and connect
+	 * them. The UI will call this, then the user will move the new vertex.
+	 */
+	extrude(x = 0, y = 0, z = 0): Vertex {
+		const newVert = new Vertex(this.mesh, this.x + x, this.y + y, this.z + z)
+		new Edge(this.mesh, this, newVert)
+		return newVert
+	}
+
 	includesEdge(edge: Edge): boolean {
 		return this.diskLink?.includes(edge.diskLink(this)) ?? false
 	}
