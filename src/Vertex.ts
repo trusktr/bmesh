@@ -1,11 +1,31 @@
+import { Vector3 } from 'three'
 import { BMesh } from './BMesh.js'
 import { BMeshElement } from './BMeshElement.js'
 import { DiskLink } from './Edge.js'
 
 export class Vertex extends BMeshElement {
-	x: number
-	y: number
-	z: number
+	get x(): number {
+		return this.position.x
+	}
+	set x(value: number) {
+		this.position.x = value
+	}
+
+	get y(): number {
+		return this.position.y
+	}
+	set y(value: number) {
+		this.position.y = value
+	}
+
+	get z(): number {
+		return this.position.z
+	}
+	set z(value: number) {
+		this.position.z = value
+	}
+
+	position: Vector3 = new Vector3()
 
 	/**
 	 * A circular linked list of edges that are connected to this vertex.

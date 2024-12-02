@@ -1,7 +1,7 @@
 export declare const black = 0;
 export declare const white = 16777215;
-export declare const darkGray = 5592405;
-export declare const mediumGray = 7237230;
+export declare const darkGray = 4144959;
+export declare const mediumGray = 5592405;
 export declare const lightGray = 10066329;
 export declare const cyan = 65535;
 export declare const deeppink = 16716947;
@@ -22,8 +22,12 @@ export declare const navyGreen = 3497531;
 export declare const limeGreen = 3329330;
 export declare const algaeGreen = 6853917;
 export declare const darkerLimeGreen = 2263842;
-export declare const axisColors: {
-    x: number;
-    y: number;
-    z: number;
+export declare const darkTheme: {
+    gridLines: number;
+    axes: {
+        x: number;
+        y: number;
+        z: number;
+    };
+    background: number;
 };

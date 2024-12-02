@@ -20,5 +20,5 @@
 		"noUncheckedIndexedAccess": true,
 		"noUncheckedSideEffectImports": true
 	},
-	"include": ["./**/*", "../src/prototypes/ops/001_create.js"]
+	"include": ["./**/*"]
 }

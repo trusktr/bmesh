@@ -1,4 +1,4 @@
-import useThreeWebGL2, { useDarkScene, useVisualDebug } from '../../prototypes/_lib/useThreeWebGL2.js'
+import useThreeWebGL2, { useDarkScene, useVisualDebug } from './_lib/useThreeWebGL2.js'
 
 export const App = useDarkScene(useThreeWebGL2())
 

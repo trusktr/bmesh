@@ -3,11 +3,13 @@ import { black, cyan, deeppink, plumParadise } from '../colors.js'
 import { App, Debug } from '../app.js'
 import { drawFacePoint, drawFaceVertsEdges } from './001_create.js'
 import { drawMesh } from './002_traverse_edges.js'
+import { type PerspectiveCamera, Vector3 } from 'three'
 
 function main() {
 	App.sphericalLook(0, 20, 6)
 	App.camera.position.x = 5
 	App.camCtrl.update()
+	const camera = App.camera as PerspectiveCamera
 
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	const bmesh = new BMesh()
@@ -40,7 +42,7 @@ function main() {
 
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	initUI()
-	handleKeys()
+	handleEvents()
 	App.renderLoop()
 
 	function initUI() {
@@ -166,8 +168,23 @@ function main() {
 		render()
 	}
 
+	function moveVertX(delta: number) {
+		if (vert) vert.x += delta
+		render()
+	}
+
+	function moveVertY(delta: number) {
+		if (vert) vert.y += delta
+		render()
+	}
+
+	function moveVertZ(delta: number) {
+		if (vert) vert.z += delta
+		render()
+	}
+
 	/** Iterate vertex edges with right/left. Iterate radials with up/down. Delete edges with 'e', faces with 'c', and vertices with 'v'. Use WASD to move the current vertex on X and Z. Use Q and E to move along Y. */
-	function handleKeys() {
+	function handleEvents() {
 		window.addEventListener('keydown', e => {
 			if (e.key === 'ArrowRight' || e.key === 'j') {
 				nextEdge()
@@ -188,25 +205,52 @@ function main() {
 			} else if (e.key === '/') {
 				splitEdge()
 			} else if (e.key === 'w') {
-				if (vert) vert.z -= 0.1
-				render()
+				moveVertZ(-0.1)
 			} else if (e.key === 's') {
-				if (vert) vert.z += 0.1
-				render()
+				moveVertZ(0.1)
 			} else if (e.key === 'a') {
-				if (vert) vert.x -= 0.1
-				render()
+				moveVertX(-0.1)
 			} else if (e.key === 'd') {
-				if (vert) vert.x += 0.1
-				render()
+				moveVertX(0.1)
 			} else if (e.key === 'q') {
-				if (vert) vert.y -= 0.1
-				render()
+				moveVertY(-0.1)
 			} else if (e.key === 'e') {
-				if (vert) vert.y += 0.1
-				render()
+				moveVertY(0.1)
 			}
 		})
+
+		let isPointerDown = false
+
+		window.addEventListener('pointermove', e => {
+			isPointerDown = true
+		})
+
+		window.addEventListener('pointermove', e => {
+			if (vert && isPointerDown && e.shiftKey) movePointOnScreen(camera, vert.position, e.movementX, -e.movementY)
+		})
+	}
+
+	// Assuming you have a camera and a vector3
+	const camRight = new Vector3()
+	const camUp = new Vector3()
+
+	/**
+	 * Move a point in world space parallel to the display screen (perpendicular
+	 * to the camera's direction). Basic version, not accounting for scene
+	 * resolution.
+	 */
+	function movePointOnScreen(camera: PerspectiveCamera, position: Vector3, moveX: number, moveY: number) {
+		// Get the camera's right and up vectors
+		camera.getWorldDirection(camRight)
+		camRight.cross(camera.up).normalize() // Right vector is perpendicular to the camera's direction and up vector
+		camera.getWorldDirection(camUp)
+		camUp.cross(camRight).negate().normalize() // Up vector is perpendicular to the camera's right vector and direction
+
+		// Move the vector
+		position.addScaledVector(camRight, moveX * 0.01)
+		position.addScaledVector(camUp, moveY * 0.01)
+
+		render()
 	}
 }
 

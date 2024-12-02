@@ -1,7 +1,7 @@
 export const black = 0x000000;
 export const white = 0xffffff;
-export const darkGray = 0x555555;
-export const mediumGray = 0x6e6e6e;
+export const darkGray = 0x3f3f3f;
+export const mediumGray = 0x555555;
 export const lightGray = 0x999999;
 export const cyan = 0x00ffff;
 export const deeppink = 0xff1493;
@@ -22,8 +22,12 @@ export const navyGreen = 0x355e3b;
 export const limeGreen = 0x32cd32;
 export const algaeGreen = 0x68951d;
 export const darkerLimeGreen = 0x228b22;
-export const axisColors = {
-    x: rosyRed,
-    y: algaeGreen,
-    z: franceBlue,
+export const darkTheme = {
+    gridLines: mediumGray,
+    axes: {
+        x: rosyRed,
+        y: algaeGreen,
+        z: franceBlue,
+    },
+    background: darkGray,
 };
