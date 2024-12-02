@@ -113,18 +113,28 @@ export class Edge extends BMeshElement {
 			(this.vertexA.z + this.vertexB.z) / 2,
 		)
 
+		/* order of new edge's verts should match this edge's verts
+		 * (so extruded faces don't flip) */
+		// TODO ^ verify this once we add normals
 		const newEdge = new Edge(this.mesh, existingVert, newVert)
+		newEdge.faceCount = this.faceCount
 
 		// Order here matters
 		this.#splitRadialLoops(existingVert, newEdge, newVert)
-		this.#replaceVertex(existingVert, newEdge, newVert)
+		this.#replaceVertex(existingVert, newVert)
 
 		return [newVert, newEdge]
 	}
 
+	// this is equivalent of both bmesh_disk_edge_remove and bmesh_disk_edge_append
+	/**
+	 * Split the radial loops of this edge into two radial loops, one for the
+	 * existing vertex and one for the new vertex.
+	 */
 	#splitRadialLoops(existingVert: Vertex, newEdge: Edge, newVert: Vertex): void {
 		let lastNewLoop
 
+		// (for each face)
 		for (const { loop } of this.radialLink ?? []) {
 			if (loop.vertex === existingVert) {
 				// the existing loop is going from existingVert to otherVertex
@@ -144,15 +154,24 @@ export class Edge extends BMeshElement {
 				if (lastNewLoop) lastNewLoop.radialLink.insertAfter(newLoop.radialLink)
 				lastNewLoop = newLoop
 			} else throw new TypeError('loop vertex is not from this edge')
+
+			loop.face.edgeCount++
 		}
+
+		console.log('INCREMENTING FACE EDGE COUNT', lastNewLoop!.face.edgeCount, lastNewLoop!.face.edgeCount + 1)
+		console.log('INCREMENTED FACE EDGE COUNT', lastNewLoop!.face.edgeCount)
 	}
 
-	#replaceVertex(existingVert: Vertex, newEdge: Edge, newVert: Vertex): void {
+	// bmesh_disk_vert_replace
+	/**
+	 * Replace one vertex of this edge with another vertex.
+	 */
+	#replaceVertex(existingVert: Vertex, newVert: Vertex): void {
 		// Remove the edge from the old vertex's disk linked list.
-		const diskLink = this.#diskLink(existingVert)
+		const diskLink = this.diskLink(existingVert)
 		this.#removeEdgeLink(diskLink, existingVert)
 
-		// TODO not needed?
+		// Not needed because the new vertex is already associated with the new Edge in split().
 		// if (!existingVert.diskLink) existingVert.diskLink = newEdge.#diskLink(existingVert)
 
 		// Add the edge to the new vertex's disk linked list.
@@ -166,22 +185,35 @@ export class Edge extends BMeshElement {
 		else throw new InvalidVertexError()
 	}
 
-	#diskLink(vertex: Vertex): DiskLink {
+	/**
+	 * Returns the DiskLink that connects this edge to the given vertex.
+	 */
+	diskLink(vertex: Vertex): DiskLink {
 		if (this.vertexA === vertex) return this.diskLinkA
 		if (this.vertexB === vertex) return this.diskLinkB
 		throw new InvalidVertexError()
 	}
 
+	/**
+	 * Returns true if the vertex is one of the two vertices of this edge.
+	 */
 	hasVertex(vertex: Vertex): boolean {
 		return this.vertexA === vertex || this.vertexB === vertex
 	}
 
+	/**
+	 * Returns the other vertex of this edge, given one of the two vertices.
+	 */
 	otherVertex(vertex: Vertex): Vertex {
 		if (this.vertexA === vertex) return this.vertexB
 		if (this.vertexB === vertex) return this.vertexA
 		throw new InvalidVertexError()
 	}
 
+	/**
+	 * Returns the next edge link in the circular linked list of edges connected
+	 * to the given vertex.
+	 */
 	nextEdgeLink(vertex: Vertex, forward = true): DiskLink {
 		let next: DiskLink | null = null
 		if (vertex === this.vertexA) next = forward ? this.diskLinkA.next : this.diskLinkA.prev
@@ -191,6 +223,10 @@ export class Edge extends BMeshElement {
 		return next
 	}
 
+	/**
+	 * Returns the previous edge link in the circular linked list of edges
+	 * connected to the given vertex.
+	 */
 	prevEdgeLink(vertex: Vertex): DiskLink {
 		return this.nextEdgeLink(vertex, false)
 	}
@@ -209,6 +245,9 @@ export class Edge extends BMeshElement {
 	}
 
 	// bmesh_disk_edge_remove
+	/**
+	 * Remove an edge from the linked list of edges connected to a vertex.
+	 */
 	#removeEdgeLink(diskLink: DiskLink, vertex: Vertex): void {
 		const isLastRemainingEdge = diskLink.next === diskLink
 		const { next: nextLink, prev: prevLink } = diskLink

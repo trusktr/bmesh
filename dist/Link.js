@@ -115,7 +115,8 @@ export function Link(BaseClass = Empty) {
         // ~2.8 times slower than plain do-while loop (with for-of syntax).
         [Symbol.iterator] = this.iterator;
         /**
-         * Run a function for each Link in the linked list. If the function returns false, the loop stops.
+         * Run a function for each Link in the linked list. If the function
+         * returns `false`, the loop stops.
          */
         // Also ~2.8 times slower than plain do-while loop.
         forEach(fn, forward = true, checkCircular = true) {
@@ -133,6 +134,17 @@ export function Link(BaseClass = Empty) {
         }
         forEachReverse(fn, checkCircular = true) {
             this.forEach(fn, false, checkCircular);
+        }
+        includes(link) {
+            let found = false;
+            this.forEach(l => {
+                if (l === link) {
+                    found = true;
+                    return false;
+                }
+                return true;
+            });
+            return found;
         }
     };
 }

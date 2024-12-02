@@ -78,7 +78,7 @@ async function main() {
 
 	console.log(bmesh)
 
-	render()
+	update()
 
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	initUI()
@@ -92,7 +92,12 @@ async function main() {
 		document.getElementById('btnRNext')!.addEventListener('click', radialNext)
 	}
 
-	function render() {
+	function update() {
+		let err = BMesh.validateLoop(loop.face)
+		if (err) throw err
+		err = BMesh.validateRadial(loop)
+		if (err) throw err
+
 		Debug.pnt.reset()
 		Debug.ln.reset()
 
@@ -116,22 +121,22 @@ async function main() {
 
 	function loopNext() {
 		loop = loop.next!
-		render()
+		update()
 	}
 
 	function loopPrev() {
 		loop = loop.prev!
-		render()
+		update()
 	}
 
 	function radialNext() {
 		loop = loop.radialLink.next!.loop
-		render()
+		update()
 	}
 
 	function radialPrev() {
 		loop = loop.radialLink.prev!.loop
-		render()
+		update()
 	}
 }
 

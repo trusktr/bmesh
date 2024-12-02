@@ -1,5 +1,6 @@
 import { Edge } from './Edge.js';
 import { Face } from './Face.js';
+import type { Loop } from './Loop.js';
 import { Vertex } from './Vertex.js';
 /**
  * This is a port of Blender's BMesh data structure to JavaScript, but without
@@ -25,7 +26,16 @@ export declare class BMesh {
      */
     static existingEdge(vertA: Vertex, vertB: Vertex): Edge | null;
     /**
-     * Returns true if a loop is valid, false otherwise.
+     * Returns an error if the loop is invalid, or null if it is valid.
      */
     static validateLoop(face: Face): Error | null;
+    /**
+     * Returns an error if the radial loop is invalid, or null if it is valid.
+     */
+    static validateRadial(loop: Loop): Error | null;
+    /**
+     * Returns an error if the disk link is invalid, or null if it is valid. If
+     * an edge is provided, it will check if the disk includes the edge.
+     */
+    static validateDisk(vertex: Vertex, edge?: Edge | null): Error | null;
 }

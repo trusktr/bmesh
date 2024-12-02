@@ -15,8 +15,9 @@ declare const Loop_base: {
         reverseIterator(checkCircular?: boolean): Iterator</*elided*/ any, any, any> & {
             [Symbol.iterator](): Iterator</*elided*/ any, any, any> & /*elided*/ any;
         };
-        forEach(fn: (link: /*elided*/ any) => false | void, forward?: boolean, checkCircular?: boolean): void;
+        forEach(fn: (link: /*elided*/ any) => boolean | void, forward?: boolean, checkCircular?: boolean): void;
         forEachReverse(fn: (link: /*elided*/ any) => false | void, checkCircular?: boolean): void;
+        includes(link: /*elided*/ any): boolean;
         [Symbol.iterator]: (forward?: boolean, checkCircular?: boolean) => Iterator</*elided*/ any, any, any> & {
             [Symbol.iterator](): Iterator</*elided*/ any, any, any> & /*elided*/ any;
         };

@@ -31,7 +31,7 @@ async function main() {
     let edge = vert.diskLink?.edge;
     if (!edge)
         throw 'missing edge';
-    render();
+    update();
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     initUI();
     App.renderLoop();
@@ -40,7 +40,20 @@ async function main() {
         document.getElementById('btnNext').addEventListener('click', nextEdge);
         document.getElementById('btnFlip').addEventListener('click', flip);
     }
-    function render() {
+    function update() {
+        if (edge?.radialLink) {
+            let err = BMesh.validateLoop(edge.radialLink.loop.face);
+            if (err)
+                throw err;
+            err = BMesh.validateRadial(edge.radialLink.loop);
+            if (err)
+                throw err;
+        }
+        if (vert) {
+            const err = BMesh.validateDisk(vert, edge);
+            if (err)
+                throw err;
+        }
         Debug.pnt.reset();
         Debug.ln.reset();
         drawMesh(bmesh);
@@ -57,19 +70,19 @@ async function main() {
         if (!edge || !vert)
             return;
         edge = edge.nextEdgeLink(vert).edge;
-        render();
+        update();
     }
     function prevEdge() {
         if (!edge || !vert)
             return;
         edge = edge.prevEdgeLink(vert).edge;
-        render();
+        update();
     }
     function flip() {
         if (!edge || !vert)
             return;
         vert = edge.otherVertex(vert);
-        render();
+        update();
     }
 }
 if (location.pathname.endsWith('002_traverse_vert.html'))

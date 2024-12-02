@@ -32,7 +32,7 @@ function main() {
     let loop = edge?.radialLink?.loop;
     if (!edge)
         throw 'missing edge';
-    render();
+    update();
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     initUI();
     handleEvents();
@@ -48,12 +48,36 @@ function main() {
         document.getElementById('btnDelFace').addEventListener('click', deleteFace);
         document.getElementById('btnSplitEdge').addEventListener('click', splitEdge);
     }
-    function render() {
+    function update() {
+        if (loop && !edge)
+            throw new Error('state sync error');
+        if (edge && !vert)
+            throw new Error('state sync error');
+        if (loop && loop.edge !== edge)
+            throw new Error('state sync error');
+        if (loop && loop.vertex !== vert && loop.vertex !== (vert && edge?.otherVertex(vert)))
+            throw new Error('state sync error');
+        if (edge?.radialLink) {
+            let err = BMesh.validateLoop(edge.radialLink.loop.face);
+            if (err)
+                throw err;
+            err = BMesh.validateRadial(edge.radialLink.loop);
+            if (err)
+                console.error(err);
+        }
+        if (vert) {
+            const err = BMesh.validateDisk(vert, edge);
+            if (err)
+                throw err;
+        }
         Debug.pnt.reset();
         Debug.ln.reset();
         drawMesh(bmesh, black);
-        if (loop)
+        if (loop) {
+            BMesh.validateLoop(loop.face);
+            BMesh.validateRadial(loop);
             drawFaceVertsEdges(loop.face, plumParadise);
+        }
         const vertA = vert;
         const vertB = vertA ? edge?.otherVertex(vertA) : null;
         if (vertA)
@@ -68,50 +92,50 @@ function main() {
             return;
         edge = edge.nextEdgeLink(vert).edge;
         loop = edge?.radialLink?.loop;
-        render();
+        update();
     }
     function prevEdge() {
         if (!edge || !vert)
             return;
         edge = edge.prevEdgeLink(vert).edge;
         loop = edge?.radialLink?.loop;
-        render();
+        update();
     }
     function nextRadial() {
         loop = loop?.radialLink.next.loop;
-        render();
+        update();
     }
     function prevRadial() {
         loop = loop?.radialLink.prev.loop;
-        render();
+        update();
     }
     function flip() {
         if (!edge || !vert)
             return;
         vert = edge.otherVertex(vert);
-        render();
+        update();
     }
     function deleteVert() {
         if (!vert)
             return;
         const oldVert = vert;
-        // If we're on a lone vert dereference or we'll leak it and keep rendering
-        // the selection.
         if (!vert.edgeCount) {
-            vert = undefined;
+            // If we're on a lone vert jump to some other vert (or undefined if
+            // there are no other verts to avoid erroneously rendering the last
+            // vert selection).
+            const verts = bmesh.vertices.values();
+            vert = verts.next().value;
+            if (vert === oldVert)
+                vert = verts.next().value;
         }
-        // not lone vert
         else {
+            // not lone vert, just swap to the next edge vert
             vert = edge.otherVertex(vert);
-            const oldEdge = edge;
-            edge = edge.nextEdgeLink(vert).edge;
-            // If we're on a standalone edge, dereference it.
-            if (oldEdge === edge)
-                edge = undefined;
         }
         oldVert.remove();
+        edge = vert?.diskLink?.edge;
         loop = edge?.radialLink?.loop;
-        render();
+        update();
     }
     function deleteEdge() {
         if (!edge)
@@ -135,32 +159,32 @@ function main() {
             edge = undefined;
         oldEdge.remove();
         loop = edge?.radialLink?.loop;
-        render();
+        update();
     }
     function deleteFace() {
         loop?.face?.remove();
         loop = edge?.radialLink?.loop;
-        render();
+        update();
     }
     function splitEdge() {
         if (vert && edge)
             edge.split(edge.otherVertex(vert));
-        render();
+        update();
     }
     function moveVertX(delta) {
         if (vert)
             vert.x += delta;
-        render();
+        update();
     }
     function moveVertY(delta) {
         if (vert)
             vert.y += delta;
-        render();
+        update();
     }
     function moveVertZ(delta) {
         if (vert)
             vert.z += delta;
-        render();
+        update();
     }
     /** Iterate vertex edges with right/left. Iterate radials with up/down. Delete edges with 'e', faces with 'c', and vertices with 'v'. Use WASD to move the current vertex on X and Z. Use Q and E to move along Y. */
     function handleEvents() {
@@ -211,34 +235,34 @@ function main() {
                 moveVertY(0.1);
             }
         });
+        // Hold shift and drag to move the current vertex on parallel to the screen.
         let isPointerDown = false;
-        window.addEventListener('pointermove', e => {
-            isPointerDown = true;
+        window.addEventListener('pointermove', () => (isPointerDown = true));
+        window.addEventListener('pointermove', event => {
+            if (vert && isPointerDown && event.shiftKey) {
+                movePointParallelScreen(camera, vert.position, event.movementX, -event.movementY);
+                update();
+            }
         });
-        window.addEventListener('pointermove', e => {
-            if (vert && isPointerDown && e.shiftKey)
-                movePointOnScreen(camera, vert.position, e.movementX, -e.movementY);
-        });
-    }
-    // Assuming you have a camera and a vector3
-    const camRight = new Vector3();
-    const camUp = new Vector3();
-    /**
-     * Move a point in world space parallel to the display screen (perpendicular
-     * to the camera's direction). Basic version, not accounting for scene
-     * resolution.
-     */
-    function movePointOnScreen(camera, position, moveX, moveY) {
-        // Get the camera's right and up vectors
-        camera.getWorldDirection(camRight);
-        camRight.cross(camera.up).normalize(); // Right vector is perpendicular to the camera's direction and up vector
-        camera.getWorldDirection(camUp);
-        camUp.cross(camRight).negate().normalize(); // Up vector is perpendicular to the camera's right vector and direction
-        // Move the vector
-        position.addScaledVector(camRight, moveX * 0.01);
-        position.addScaledVector(camUp, moveY * 0.01);
-        render();
     }
 }
 if (location.pathname.endsWith('004_split_edge.html'))
     main();
+// Assuming you have a camera and a vector3
+const camRight = new Vector3();
+const camUp = new Vector3();
+/**
+ * Move a point in world space parallel to the display screen (perpendicular
+ * to the camera's direction). Basic version, not accounting for scene
+ * resolution.
+ */
+export function movePointParallelScreen(camera, position, moveX, moveY) {
+    // Get the camera's right and up vectors
+    camera.getWorldDirection(camRight);
+    camRight.cross(camera.up).normalize(); // Right vector is perpendicular to the camera's direction and up vector
+    camera.getWorldDirection(camUp);
+    camUp.cross(camRight).negate().normalize(); // Up vector is perpendicular to the camera's right vector and direction
+    // Move the vector
+    position.addScaledVector(camRight, moveX * 0.01);
+    position.addScaledVector(camUp, moveY * 0.01);
+}

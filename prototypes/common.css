@@ -19,6 +19,11 @@ html {
 	flex-wrap: wrap;
 	width: 100%;
 	justify-content: center;
+
+	& > .btns {
+		position: unset;
+		transform: unset;
+	}
 }
 
 .btn {

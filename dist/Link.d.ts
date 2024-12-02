@@ -43,10 +43,12 @@ export declare function Link<T extends AnyConstructor = typeof Empty>(BaseClass?
             [Symbol.iterator](): Iterator</*elided*/ any, any, any> & /*elided*/ any;
         };
         /**
-         * Run a function for each Link in the linked list. If the function returns false, the loop stops.
+         * Run a function for each Link in the linked list. If the function
+         * returns `false`, the loop stops.
          */
-        forEach(fn: (link: /*elided*/ any) => false | void, forward?: boolean, checkCircular?: boolean): void;
+        forEach(fn: (link: /*elided*/ any) => boolean | void, forward?: boolean, checkCircular?: boolean): void;
         forEachReverse(fn: (link: /*elided*/ any) => false | void, checkCircular?: boolean): void;
+        includes(link: /*elided*/ any): boolean;
         /**
          * This integrates linked list iteration with built-in syntax. For example:
          *

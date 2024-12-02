@@ -1,5 +1,5 @@
 // Basic creation of a mesh with a face and drawing of vertices and edges.
-import { BMesh, Edge, Face, vec3, Vertex } from 'bmesh';
+import { BMesh, Face, vec3, Vertex } from 'bmesh';
 import { App, Debug } from '../app.js';
 import { deeppink, yellow } from '../colors.js';
 /** @import { Face, Vertex } from 'bmesh' */
@@ -15,6 +15,12 @@ async function main() {
     // drawMeshVertsEdges(mesh)
     drawFaceVertsEdges(f);
     drawFacePoint(f);
+    let err = BMesh.validateLoop(f);
+    if (err)
+        throw err;
+    err = BMesh.validateRadial(f.loop);
+    if (err)
+        throw err;
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     App.renderLoop();
 }

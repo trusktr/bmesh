@@ -16,8 +16,9 @@ declare const DiskLink_base: {
         reverseIterator(checkCircular?: boolean): Iterator</*elided*/ any, any, any> & {
             [Symbol.iterator](): Iterator</*elided*/ any, any, any> & /*elided*/ any;
         };
-        forEach(fn: (link: /*elided*/ any) => false | void, forward?: boolean, checkCircular?: boolean): void;
+        forEach(fn: (link: /*elided*/ any) => boolean | void, forward?: boolean, checkCircular?: boolean): void;
         forEachReverse(fn: (link: /*elided*/ any) => false | void, checkCircular?: boolean): void;
+        includes(link: /*elided*/ any): boolean;
         [Symbol.iterator]: (forward?: boolean, checkCircular?: boolean) => Iterator</*elided*/ any, any, any> & {
             [Symbol.iterator](): Iterator</*elided*/ any, any, any> & /*elided*/ any;
         };
@@ -81,9 +82,27 @@ export declare class Edge extends BMeshElement {
      * @returns A tuple of the new vertex and the new edge.
      */
     split(existingVert: Vertex, newVert?: Vertex): [Vertex, Edge];
+    /**
+     * Returns the DiskLink that connects this edge to the given vertex.
+     */
+    diskLink(vertex: Vertex): DiskLink;
+    /**
+     * Returns true if the vertex is one of the two vertices of this edge.
+     */
     hasVertex(vertex: Vertex): boolean;
+    /**
+     * Returns the other vertex of this edge, given one of the two vertices.
+     */
     otherVertex(vertex: Vertex): Vertex;
+    /**
+     * Returns the next edge link in the circular linked list of edges connected
+     * to the given vertex.
+     */
     nextEdgeLink(vertex: Vertex, forward?: boolean): DiskLink;
+    /**
+     * Returns the previous edge link in the circular linked list of edges
+     * connected to the given vertex.
+     */
     prevEdgeLink(vertex: Vertex): DiskLink;
     /**
      * Remove this edge from the mesh, also removing any faces and loops.

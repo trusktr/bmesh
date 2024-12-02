@@ -10,10 +10,7 @@ export default {
 	overrides: [
 		{
 			files: '*.md',
-			options: {
-				useTabs: false,
-				tabWidth: 2,
-			},
+			options: { useTabs: false, tabWidth: 2 },
 		},
 	],
 }

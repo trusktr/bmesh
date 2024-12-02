@@ -1,7 +1,7 @@
 import { Vector3 } from 'three';
 import { BMesh } from './BMesh.js';
 import { BMeshElement } from './BMeshElement.js';
-import { DiskLink } from './Edge.js';
+import { DiskLink, Edge } from './Edge.js';
 export declare class Vertex extends BMeshElement {
     get x(): number;
     set x(value: number);
@@ -21,6 +21,7 @@ export declare class Vertex extends BMeshElement {
      */
     edgeCount: number;
     constructor(mesh: BMesh, x?: number, y?: number, z?: number);
+    includesEdge(edge: Edge): boolean;
     /**
      * Returns a tuple of the Vertex's xyz values. Pass an array if you want to
      * write to existing instead of new memory for performance.

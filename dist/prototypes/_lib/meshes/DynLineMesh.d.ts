@@ -8,7 +8,7 @@ export declare class DynLineMesh extends THREE.LineSegments {
     _dirty: boolean;
     constructor(initSize?: number, customLineMaterial?: null);
     reset(): this;
-    addPoint(p0: any, p1: any, color0?: number, color1?: null, isDash?: boolean): this;
+    addPoint(p0: any, p1: any, color0?: number, color1?: number | null, isDash?: boolean): this;
     box(v0: any, v1: any, col?: number, is_dash?: boolean): this;
     _updateGeometry(): void;
 }

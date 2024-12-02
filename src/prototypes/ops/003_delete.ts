@@ -35,7 +35,7 @@ function main() {
 
 	if (!edge) throw 'missing edge'
 
-	render()
+	update()
 
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	initUI()
@@ -51,7 +51,14 @@ function main() {
 		document.getElementById('btnDelFace')!.addEventListener('click', deleteFace)
 	}
 
-	function render() {
+	function update() {
+		if (edge?.radialLink) {
+			let err = BMesh.validateLoop(edge.radialLink.loop.face)
+			if (err) throw err
+			err = BMesh.validateRadial(edge.radialLink.loop)
+			if (err) throw err
+		}
+
 		Debug.pnt.reset()
 		Debug.ln.reset()
 
@@ -69,19 +76,19 @@ function main() {
 	function nextEdge() {
 		if (!edge || !vert) return
 		edge = edge.nextEdgeLink(vert!).edge
-		render()
+		update()
 	}
 
 	function prevEdge() {
 		if (!edge || !vert) return
 		edge = edge.prevEdgeLink(vert).edge
-		render()
+		update()
 	}
 
 	function flip() {
 		if (!edge || !vert) return
 		vert = edge.otherVertex(vert)
-		render()
+		update()
 	}
 
 	function deleteVert() {
@@ -106,7 +113,7 @@ function main() {
 		}
 
 		oldVert.remove()
-		render()
+		update()
 	}
 
 	function deleteEdge() {
@@ -132,12 +139,12 @@ function main() {
 		if (isLastEdge) edge = undefined
 
 		oldEdge.remove()
-		render()
+		update()
 	}
 
 	function deleteFace() {
 		edge?.radialLink?.loop.face?.remove()
-		render()
+		update()
 	}
 }
 

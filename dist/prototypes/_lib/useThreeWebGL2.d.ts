@@ -3,7 +3,11 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 export { THREE };
 /** @typedef {ReturnType<typeof useThreeWebGL2>} App */
 export declare function useDarkScene(/** @type {App} */ tjs: any, props?: {}): any;
-export declare function useVisualDebug(/** @type {App} */ tjs: any, customLineMaterial?: null): Promise<{}>;
+export declare function useVisualDebug(/** @type {App} */ tjs: any, customLineMaterial?: null): Promise<{
+    ln: import("./meshes/DynLineMesh.js").DynLineMesh;
+    pnt: import("./meshes/ShapePointsMesh.js").ShapePointsMesh;
+    reset(): void;
+}>;
 export default function useThreeWebGL2(props?: {}): {
     renderer: THREE.WebGLRenderer;
     scene: THREE.Scene;

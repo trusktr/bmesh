@@ -1,7 +1,7 @@
 import { Vector3 } from 'three';
 import { BMesh } from './BMesh.js';
 import { BMeshElement } from './BMeshElement.js';
-import { DiskLink } from './Edge.js';
+import { DiskLink, Edge } from './Edge.js';
 export class Vertex extends BMeshElement {
     get x() {
         return this.position.x;
@@ -40,6 +40,9 @@ export class Vertex extends BMeshElement {
         this.z = z;
         mesh.addVertex(this);
     }
+    includesEdge(edge) {
+        return this.diskLink?.includes(edge.diskLink(this)) ?? false;
+    }
     /**
      * Returns a tuple of the Vertex's xyz values. Pass an array if you want to
      * write to existing instead of new memory for performance.
@@ -54,10 +57,8 @@ export class Vertex extends BMeshElement {
      * Remove this vertex from the mesh, also removing any connected edges, faces, and loops.
      */
     remove() {
-        for (const link of [...(this.diskLink ?? [])]) {
-            console.log('link to remove:', link);
+        for (const link of [...(this.diskLink ?? [])])
             link.edge.remove();
-        }
         this.mesh.vertices.delete(this);
     }
 }

@@ -46,13 +46,16 @@ export async function useVisualDebug(/** @type {App} */ tjs, customLineMaterial 
         import('./meshes/DynLineMesh.js'),
         import('./meshes/ShapePointsMesh.js'),
     ]);
-    const o = {};
-    tjs.scene.add((o.ln = new DynLineMesh(20, customLineMaterial)));
-    tjs.scene.add((o.pnt = new ShapePointsMesh));
-    o.reset = () => {
-        o.ln.reset();
-        o.pnt.reset();
+    const o = {
+        ln: new DynLineMesh(20, customLineMaterial),
+        pnt: new ShapePointsMesh,
+        reset() {
+            this.ln.reset();
+            this.pnt.reset();
+        }
     };
+    tjs.scene.add(o.ln);
+    tjs.scene.add(o.pnt);
     return o;
 }
 // #endregion

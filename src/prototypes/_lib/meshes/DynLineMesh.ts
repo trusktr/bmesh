@@ -32,9 +32,9 @@ export class DynLineMesh extends THREE.LineSegments{
 		return this;
     }
 
-    addPoint( p0, p1, color0=this._defaultColor, color1=null, isDash=false ){
+    addPoint( p0, p1, color0=this._defaultColor, color1:number|null=null, isDash=false ){
         this._verts.push( p0[0], p0[1], p0[2], p1[0], p1[1], p1[2] );
-        this._color.push( ...glColor( color0 ), ...glColor( (color1 != null) ? color1:color0 ) );
+        this._color.push( ...glColor( color0 ), ...glColor( color1 ?? color0 ) );
 
         if( isDash ){
             const len = Math.sqrt(

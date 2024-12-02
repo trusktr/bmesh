@@ -127,10 +127,11 @@ export function Link<T extends AnyConstructor = typeof Empty>(BaseClass: T = Emp
 		[Symbol.iterator] = this.iterator
 
 		/**
-		 * Run a function for each Link in the linked list. If the function returns false, the loop stops.
+		 * Run a function for each Link in the linked list. If the function
+		 * returns `false`, the loop stops.
 		 */
 		// Also ~2.8 times slower than plain do-while loop.
-		forEach(fn: (link: NonNullable<this['next']>) => false | void, forward = true, checkCircular = true) {
+		forEach(fn: (link: NonNullable<this['next']>) => boolean | void, forward = true, checkCircular = true) {
 			let link: Link | null = this
 
 			while (link) {
@@ -145,6 +146,18 @@ export function Link<T extends AnyConstructor = typeof Empty>(BaseClass: T = Emp
 
 		forEachReverse(fn: (link: NonNullable<this['next']>) => false | void, checkCircular = true) {
 			this.forEach(fn, false, checkCircular)
+		}
+
+		includes(link: Link): boolean {
+			let found = false
+			this.forEach(l => {
+				if (l === link) {
+					found = true
+					return false
+				}
+				return true
+			})
+			return found
 		}
 	}
 }

@@ -62,7 +62,7 @@ async function main() {
     ////////////////////////////////////////////////////////////
     let loop = [...bmesh.faces][0].loop.prev;
     console.log(bmesh);
-    render();
+    update();
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     initUI();
     App.renderLoop();
@@ -72,7 +72,13 @@ async function main() {
         document.getElementById('btnRPrev').addEventListener('click', radialPrev);
         document.getElementById('btnRNext').addEventListener('click', radialNext);
     }
-    function render() {
+    function update() {
+        let err = BMesh.validateLoop(loop.face);
+        if (err)
+            throw err;
+        err = BMesh.validateRadial(loop);
+        if (err)
+            throw err;
         Debug.pnt.reset();
         Debug.ln.reset();
         drawMesh(bmesh);
@@ -90,19 +96,19 @@ async function main() {
     }
     function loopNext() {
         loop = loop.next;
-        render();
+        update();
     }
     function loopPrev() {
         loop = loop.prev;
-        render();
+        update();
     }
     function radialNext() {
         loop = loop.radialLink.next.loop;
-        render();
+        update();
     }
     function radialPrev() {
         loop = loop.radialLink.prev.loop;
-        render();
+        update();
     }
 }
 if (location.pathname.endsWith('002_traverse_edges.html'))
