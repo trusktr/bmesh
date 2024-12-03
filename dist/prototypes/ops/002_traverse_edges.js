@@ -1,4 +1,4 @@
-import { BMesh, Face, Vertex } from 'bmesh';
+import { BMesh, Edge, Face, Vertex } from 'bmesh';
 import { App, Debug } from '../app.js';
 import { cyan, deeppink, orange, red } from '../colors.js';
 import { drawFacePoint, drawFaceVertsEdges } from './001_create.js';
@@ -7,21 +7,9 @@ async function main() {
     App.camera.position.x = 5;
     App.camCtrl.update();
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    const bmesh = new BMesh();
-    const v0 = new Vertex(bmesh, -2, 0, -1);
-    const v1 = new Vertex(bmesh, 0, 0, -1);
-    const v2 = new Vertex(bmesh, 2, 0, -1);
-    const v3 = new Vertex(bmesh, -2, 0, 1);
-    const v4 = new Vertex(bmesh, 0, 0, 1);
-    const v5 = new Vertex(bmesh, 2, 0, 1);
-    const v6 = new Vertex(bmesh, 0, 1, -1);
-    const v7 = new Vertex(bmesh, 0, 1, 1);
-    const fVerts0 = [v1, v4, v5, v2];
-    new Face(bmesh, fVerts0, bmesh.edgesFromVerts(...fVerts0));
-    const fVerts1 = [v0, v3, v4, v1];
-    new Face(bmesh, fVerts1, bmesh.edgesFromVerts(...fVerts1));
-    const fVerts2 = [v1, v6, v7, v4];
-    const f = new Face(bmesh, fVerts2, bmesh.edgesFromVerts(...fVerts2));
+    const bmesh = createTestMesh();
+    const faces = [...bmesh.faces];
+    const f = faces[faces.length - 1];
     // tests ///////////////////////////////////////////////////
     const set = new Set();
     for (const [loop, nextLoop] of f.loop) {
@@ -144,4 +132,24 @@ export function setEquals(a, b) {
         if (!b.has(elem))
             return false;
     return true;
+}
+export function createTestMesh() {
+    const bmesh = new BMesh();
+    const v0 = new Vertex(bmesh, -2, 0, -1);
+    const v1 = new Vertex(bmesh, 0, 0, -1);
+    const v2 = new Vertex(bmesh, 2, 0, -1);
+    const v3 = new Vertex(bmesh, -2, 0, 1);
+    const v4 = new Vertex(bmesh, 0, 0, 1);
+    const v5 = new Vertex(bmesh, 2, 0, 1);
+    const v6 = new Vertex(bmesh, 0, 1, -1);
+    const v7 = new Vertex(bmesh, 0, 1, 1);
+    const fVerts0 = [v1, v4, v5, v2];
+    new Face(bmesh, fVerts0, bmesh.edgesFromVerts(...fVerts0));
+    const fVerts1 = [v0, v3, v4, v1];
+    new Face(bmesh, fVerts1, bmesh.edgesFromVerts(...fVerts1));
+    const fVerts2 = [v1, v6, v7, v4];
+    new Face(bmesh, fVerts2, bmesh.edgesFromVerts(...fVerts2));
+    const v8 = new Vertex(bmesh, 0, 1.5, 1.5);
+    new Edge(bmesh, v7, v8);
+    return bmesh;
 }

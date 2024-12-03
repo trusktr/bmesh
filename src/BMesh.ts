@@ -1,8 +1,3 @@
-import { Edge } from './Edge.js'
-import { Face } from './Face.js'
-import type { Loop } from './Loop.js'
-import { Vertex } from './Vertex.js'
-
 /**
  * This is a port of Blender's BMesh data structure to JavaScript, but without
  * anything specific to rendering such as normals or material indices. Maybe
@@ -10,24 +5,20 @@ import { Vertex } from './Vertex.js'
  * or PlayCanvas to copy them from a bmesh, but for now they can generate their
  * own.
  */
+
+import { Edge } from './Edge.js'
+import { Face } from './Face.js'
+import type { Loop } from './Loop.js'
+import { Vertex } from './Vertex.js'
+
+/**
+ * A BMesh is a collection of vertices, edges connecting vertices, and faces
+ * defined by edges going in a loop.
+ */
 export class BMesh {
 	vertices: Set<Vertex> = new Set()
 	edges: Set<Edge> = new Set()
 	faces: Set<Face> = new Set()
-
-	addVertex(vertex: Vertex): void {
-		this.vertices.add(vertex)
-	}
-
-	addEdge(edge: Edge): void {
-		this.edges.add(edge)
-	}
-
-	addFace(face: Face): void {
-		const err = BMesh.validateLoop(face)
-		if (err) throw err
-		this.faces.add(face)
-	}
 
 	// BM_edges_from_verts_ensure
 	edgesFromVerts(...vertices: Vertex[]): Edge[] {

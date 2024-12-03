@@ -68,21 +68,6 @@ export declare class Edge extends BMeshElement {
     diskLinkB: DiskLink;
     constructor(mesh: BMesh, vertA: Vertex, vertB: Vertex);
     /**
-     * Split this edge into two edges (one new edge) with a new vertex between
-     * them. Optionally provide the vertex to place in the middle.
-     *
-     * @param existingVert - The existing vertex that is on one end of the edge
-     * to split. The new Edge will be created between this vertex and the new
-     * vertex.
-     *
-     * @param newVert - The vertex to place in between the old edge and the new
-     * edge. If not provided, a new Vertex will be created, which will be located at
-     * the midpoint of the old edge.
-     *
-     * @returns A tuple of the new vertex and the new edge.
-     */
-    split(existingVert: Vertex, newVert?: Vertex): [Vertex, Edge];
-    /**
      * Returns the DiskLink that connects this edge to the given vertex.
      */
     diskLink(vertex: Vertex): DiskLink;
@@ -104,6 +89,29 @@ export declare class Edge extends BMeshElement {
      * connected to the given vertex.
      */
     prevEdgeLink(vertex: Vertex): DiskLink;
+    /**
+     * Split this edge into two edges (one new edge) with a new vertex between
+     * them. Optionally provide the vertex to place in the middle.
+     *
+     * @param existingVert - The existing vertex that is on one end of the edge
+     * to split. The new Edge will be created between this vertex and the new
+     * vertex.
+     *
+     * @param newVert - The vertex to place in between the old edge and the new
+     * edge. If not provided, a new Vertex will be created, which will be located at
+     * the midpoint of the old edge.
+     *
+     * @returns A tuple of the new vertex and the new edge.
+     */
+    split(existingVert: Vertex, newVert?: Vertex): [Vertex, Edge];
+    /**
+     * Extrude this edge by duplicating it and moving the vertices in the given direction. It will
+     * create two new vertices, three new edges, and a new face.
+     *
+     * @returns The new edge that is parallel to this edge, typically the edge
+     * that will be the new selection and will be translated by the user.
+     */
+    extrude(x?: number, y?: number, z?: number): Edge;
     /**
      * Remove this edge from the mesh, also removing any faces and loops.
      */

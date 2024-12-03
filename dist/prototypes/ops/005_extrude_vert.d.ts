@@ -1,7 +1,6 @@
-import { type PerspectiveCamera, Vector3 } from 'three';
+import { type Edge, type Loop, type Vertex } from 'bmesh';
 /**
- * Move a point in world space parallel to the display screen (perpendicular
- * to the camera's direction). Basic version, not accounting for scene
- * resolution.
+ * Validates the current selection. Assume that the current `vert`, `edge`, and
+ * `loop` are in sync (edge has vert, loop has edge, etc).
  */
-export declare function movePointParallelScreen(camera: PerspectiveCamera, position: Vector3, moveX: number, moveY: number): void;
+export declare function validate(vert?: Vertex, loop?: Loop, edge?: Edge): void;

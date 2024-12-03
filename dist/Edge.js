@@ -1,7 +1,7 @@
 import { BMesh } from './BMesh.js';
 import { Link, NonCircularError } from './Link.js';
 import { Vertex } from './Vertex.js';
-import { RadialLoopLink } from './Face.js';
+import { Face, RadialLoopLink } from './Face.js';
 import { BMeshElement } from './BMeshElement.js';
 import { Loop } from './Loop.js';
 /** A circular linked list of edges connected to a vertex. */
@@ -59,7 +59,7 @@ export class Edge extends BMeshElement {
             return edge;
         this.diskLinkA = this.#associateVert(vertA);
         this.diskLinkB = this.#associateVert(vertB);
-        mesh.addEdge(this);
+        mesh.edges.add(this);
     }
     /**
      * Add an edge to the linked list of edges connected to this vertex.
@@ -71,6 +71,60 @@ export class Edge extends BMeshElement {
         vert.diskLink.insertBefore(link);
         vert.edgeCount++;
         return link;
+    }
+    // bmesh_disk_edge_link_from_vert
+    /**
+     * Returns the DiskLink that connects this edge to the given vertex.
+     */
+    diskLink(vertex) {
+        if (this.vertexA === vertex)
+            return this.diskLinkA;
+        if (this.vertexB === vertex)
+            return this.diskLinkB;
+        throw new InvalidVertexError();
+    }
+    // BM_vert_in_edge
+    /**
+     * Returns true if the vertex is one of the two vertices of this edge.
+     */
+    hasVertex(vertex) {
+        return this.vertexA === vertex || this.vertexB === vertex;
+    }
+    // BM_edge_other_vert
+    /**
+     * Returns the other vertex of this edge, given one of the two vertices.
+     */
+    otherVertex(vertex) {
+        if (this.vertexA === vertex)
+            return this.vertexB;
+        if (this.vertexB === vertex)
+            return this.vertexA;
+        throw new InvalidVertexError();
+    }
+    // bmesh_disk_edge_next
+    /**
+     * Returns the next edge link in the circular linked list of edges connected
+     * to the given vertex.
+     */
+    nextEdgeLink(vertex, forward = true) {
+        let next = null;
+        if (vertex === this.vertexA)
+            next = forward ? this.diskLinkA.next : this.diskLinkA.prev;
+        else if (vertex === this.vertexB)
+            next = forward ? this.diskLinkB.next : this.diskLinkB.prev;
+        else
+            throw new InvalidVertexError();
+        if (!next)
+            throw new NonCircularError();
+        return next;
+    }
+    // bmesh_disk_edge_prev
+    /**
+     * Returns the previous edge link in the circular linked list of edges
+     * connected to the given vertex.
+     */
+    prevEdgeLink(vertex) {
+        return this.nextEdgeLink(vertex, false);
     }
     // bmesh_kernel_split_edge_make_vert
     /**
@@ -162,53 +216,22 @@ export class Edge extends BMeshElement {
             throw new InvalidVertexError();
     }
     /**
-     * Returns the DiskLink that connects this edge to the given vertex.
+     * Extrude this edge by duplicating it and moving the vertices in the given direction. It will
+     * create two new vertices, three new edges, and a new face.
+     *
+     * @returns The new edge that is parallel to this edge, typically the edge
+     * that will be the new selection and will be translated by the user.
      */
-    diskLink(vertex) {
-        if (this.vertexA === vertex)
-            return this.diskLinkA;
-        if (this.vertexB === vertex)
-            return this.diskLinkB;
-        throw new InvalidVertexError();
-    }
-    /**
-     * Returns true if the vertex is one of the two vertices of this edge.
-     */
-    hasVertex(vertex) {
-        return this.vertexA === vertex || this.vertexB === vertex;
-    }
-    /**
-     * Returns the other vertex of this edge, given one of the two vertices.
-     */
-    otherVertex(vertex) {
-        if (this.vertexA === vertex)
-            return this.vertexB;
-        if (this.vertexB === vertex)
-            return this.vertexA;
-        throw new InvalidVertexError();
-    }
-    /**
-     * Returns the next edge link in the circular linked list of edges connected
-     * to the given vertex.
-     */
-    nextEdgeLink(vertex, forward = true) {
-        let next = null;
-        if (vertex === this.vertexA)
-            next = forward ? this.diskLinkA.next : this.diskLinkA.prev;
-        else if (vertex === this.vertexB)
-            next = forward ? this.diskLinkB.next : this.diskLinkB.prev;
-        else
-            throw new InvalidVertexError();
-        if (!next)
-            throw new NonCircularError();
-        return next;
-    }
-    /**
-     * Returns the previous edge link in the circular linked list of edges
-     * connected to the given vertex.
-     */
-    prevEdgeLink(vertex) {
-        return this.nextEdgeLink(vertex, false);
+    extrude(x = 0, y = 0, z = 0) {
+        const newVertA = new Vertex(this.mesh, this.vertexA.x + x, this.vertexA.y + y, this.vertexA.z + z);
+        const newEdgeA = new Edge(this.mesh, this.vertexA, newVertA);
+        const newVertB = new Vertex(this.mesh, this.vertexB.x + x, this.vertexB.y + y, this.vertexB.z + z);
+        const newEdgeB = new Edge(this.mesh, this.vertexB, newVertB);
+        const newParallelEdge = new Edge(this.mesh, newVertA, newVertB);
+        // TODO Ensure the same normal direction (winding) to match adjacent faces once we add normals.
+        new Face(this.mesh, [this.vertexA, this.vertexB, newVertB, newVertA], [this, newEdgeB, newParallelEdge, newEdgeA]);
+        // debugger
+        return newParallelEdge;
     }
     // BM_edge_kill
     /**

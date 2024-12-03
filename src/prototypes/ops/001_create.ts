@@ -61,9 +61,9 @@ export function drawVertEdges(v: Vertex) {
 }
 
 // We could use center of mass instead of average to make this better.
-export function drawFacePoint(face: Face) {
+export function drawFacePoint(face: Face, color = yellow) {
 	const pointSize = 7
-	Debug.pnt.addPoint(centroid(face), yellow, pointSize, 2)
+	Debug.pnt.addPoint(centroid(face), color, pointSize, 2)
 }
 
 /** get the centroid of a set of edges */
@@ -77,7 +77,8 @@ export function centroid(face: Face, target: [number, number, number] = [0, 0, 0
 		const { x: x1, y: y1, z: z1 } = loop.edge.vertexA
 		const { x: x2, y: y2, z: z2 } = loop.edge.vertexB
 
-		const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2)
+		// If zero length, use a small value to avoid NaN.
+		const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2) || Number.MIN_VALUE
 		const midX = (x1 + x2) / 2
 		const midY = (y1 + y2) / 2
 		const midZ = (z1 + z2) / 2

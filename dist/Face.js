@@ -25,15 +25,27 @@ export class Face extends BMeshElement {
         super(mesh);
         Face.#validateInput(vertices, edges);
         this.edgeCount = vertices.length;
-        this.loop = this.#createLoop(vertices[0], edges[0]);
         // avoid duplicate faces
         const face = BMesh.existingFace(vertices);
         if (face)
             return face;
-        // Run this *after* the existingFace check, or else existingFace will detect an invalid Loop.
-        // edges[0]!.addLoop(this.loop)
         this.#createLoops(vertices, edges);
-        mesh.addFace(this);
+        mesh.faces.add(this);
+    }
+    #createLoops(vertices, edges) {
+        let lastLoop;
+        for (const [i, vert] of vertices.entries()) {
+            const edge = edges[i];
+            const nextVert = vertices[(i + 1) % vertices.length];
+            if (!edge.hasVertex(vert))
+                throw new TypeError("edge doesn't contain vertex. wrong order?");
+            if (!edge.hasVertex(nextVert))
+                throw new TypeError("edge doesn't contain vertex. wrong order?");
+            const loop = this.#createLoop(vert, edge);
+            this.loop ??= loop;
+            lastLoop?.insertAfter(loop);
+            lastLoop = loop;
+        }
     }
     // BM_loop_create
     #createLoop(vertex, edge) {
@@ -44,23 +56,6 @@ export class Face extends BMeshElement {
         edge.radialLink.insertBefore(newLink);
         edge.faceCount++;
         return loop;
-    }
-    #createLoops(vertices, edges) {
-        const start = this.loop;
-        let lastLoop = start;
-        for (const [i, vert] of vertices.entries()) {
-            if (i === 0)
-                continue;
-            const edge = edges[i];
-            const nextVert = vertices[(i + 1) % vertices.length];
-            if (!edge.hasVertex(vert))
-                throw new TypeError("edge doesn't contain vertex. wrong order?");
-            if (!edge.hasVertex(nextVert))
-                throw new TypeError("edge doesn't contain vertex. wrong order?");
-            const loop = this.#createLoop(vert, edge);
-            lastLoop.insertAfter(loop);
-            lastLoop = loop;
-        }
     }
     static #validateInput(vertices, edges) {
         if (!vertices || !edges)

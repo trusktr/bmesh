@@ -38,7 +38,7 @@ export class Vertex extends BMeshElement {
         this.x = x;
         this.y = y;
         this.z = z;
-        mesh.addVertex(this);
+        mesh.vertices.add(this);
     }
     // bmo_extrude_vert_indiv_exec (but for one vertex only, the UI operations call it with multiple selected vertices)
     /**

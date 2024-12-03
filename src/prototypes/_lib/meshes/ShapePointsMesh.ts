@@ -45,6 +45,8 @@ export class ShapePointsMesh extends THREE.Points{
     }
 
     addPoint( pos, color = this._defaultColor, size = this._defaultSize, shape = this._defaultShape, perspective = this._defaultPerspective ){
+        if (pos.some(n => isNaN(n))) debugger
+        console.log(...pos)
         this._verts.push( pos[0], pos[1], pos[2] );
         this._color.push( ...glColor( color ) );
         this._config.push( size * devicePixelRatio, shape );
