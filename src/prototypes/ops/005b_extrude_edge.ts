@@ -128,7 +128,7 @@ function main() {
 	}
 }
 
-if (location.pathname.endsWith('005_extrude_edge.html')) main()
+if (location.pathname.endsWith('005b_extrude_edge.html')) main()
 
 export function moveEdgeParallelScreen(camera: PerspectiveCamera, edge: Edge, moveX: number, moveY: number) {
 	movePointParallelScreen(camera, edge.vertexA.position, moveX, moveY)

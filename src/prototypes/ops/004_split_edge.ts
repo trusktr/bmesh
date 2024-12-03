@@ -1,4 +1,4 @@
-import { BMesh, Vertex } from 'bmesh'
+import { BMesh } from 'bmesh'
 import { black, cyan, deeppink, plumParadise } from '../colors.js'
 import { App, Debug } from '../app.js'
 import { drawFacePoint, drawFaceVertsEdges } from './001_create.js'

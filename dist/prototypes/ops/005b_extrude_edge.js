@@ -121,7 +121,7 @@ function main() {
         });
     }
 }
-if (location.pathname.endsWith('005_extrude_edge.html'))
+if (location.pathname.endsWith('005b_extrude_edge.html'))
     main();
 export function moveEdgeParallelScreen(camera, edge, moveX, moveY) {
     movePointParallelScreen(camera, edge.vertexA.position, moveX, moveY);

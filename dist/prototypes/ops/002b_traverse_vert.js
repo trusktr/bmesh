@@ -69,5 +69,5 @@ async function main() {
         update();
     }
 }
-if (location.pathname.endsWith('002_traverse_vert.html'))
+if (location.pathname.endsWith('002b_traverse_vert.html'))
     main();
