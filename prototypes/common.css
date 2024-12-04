@@ -20,10 +20,15 @@ html {
 	flex-wrap: wrap;
 	width: 100%;
 	justify-content: center;
+	pointer-events: none;
 
 	& > .btns {
 		position: unset;
 		transform: unset;
+	}
+
+	& > :not(.btns) {
+		pointer-events: auto;
 	}
 }
 

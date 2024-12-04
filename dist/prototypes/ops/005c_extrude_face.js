@@ -1,4 +1,4 @@
-import {} from 'bmesh';
+import { Face } from 'bmesh';
 import { black, cyan, deeppink, plumParadise } from '../colors.js';
 import { App, Debug } from '../app.js';
 import { drawFacePoint, drawFaceVertsEdges } from './001_create.js';
@@ -29,7 +29,7 @@ function main() {
         document.getElementById('btnPrev').addEventListener('click', prevEdge);
         document.getElementById('btnNext').addEventListener('click', nextEdge);
         document.getElementById('btnFlip').addEventListener('click', flip);
-        document.getElementById('btnExtrude').addEventListener('click', extrudeEdge);
+        document.getElementById('btnExtrude').addEventListener('click', extrudeFace);
     }
     function update() {
         validate(vert, loop, edge);
@@ -78,12 +78,13 @@ function main() {
         vert = edge.otherVertex(vert);
         update();
     }
-    function extrudeEdge() {
-        if (!edge)
+    function extrudeFace() {
+        if (!loop)
             return;
-        edge = edge.extrude();
-        vert = edge.vertexA;
-        loop = edge.radialLink?.loop;
+        const face = loop.face.extrude();
+        loop = face.loop;
+        vert = loop.vertex;
+        edge = loop.edge;
         update();
     }
     /**
@@ -109,21 +110,21 @@ function main() {
                 flip();
             }
             else if (e.key === 'e') {
-                extrudeEdge();
+                extrudeFace();
             }
         });
         // Hold shift and drag to move the current vertex on parallel to the screen.
         window.addEventListener('pointermove', event => {
-            if (edge && event.shiftKey) {
-                moveEdgeParallelScreen(camera, edge, event.movementX, -event.movementY);
+            if (loop && event.shiftKey) {
+                moveFaceParallelScreen(camera, loop.face, event.movementX, -event.movementY);
                 update();
             }
         });
     }
 }
-if (location.pathname.endsWith('005b_extrude_edge.html'))
+if (location.pathname.endsWith('005c_extrude_face.html'))
     main();
-export function moveEdgeParallelScreen(camera, edge, moveX, moveY) {
-    for (const vert of [edge.vertexA, edge.vertexB])
-        movePointParallelScreen(camera, vert.position, moveX, moveY);
+export function moveFaceParallelScreen(camera, face, moveX, moveY) {
+    for (const { vertex } of face.loop)
+        movePointParallelScreen(camera, vertex.position, moveX, moveY);
 }

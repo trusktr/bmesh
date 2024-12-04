@@ -223,14 +223,13 @@ export class Edge extends BMeshElement {
      * that will be the new selection and will be translated by the user.
      */
     extrude(x = 0, y = 0, z = 0) {
-        const newVertA = new Vertex(this.mesh, this.vertexA.x + x, this.vertexA.y + y, this.vertexA.z + z);
-        const newEdgeA = new Edge(this.mesh, this.vertexA, newVertA);
-        const newVertB = new Vertex(this.mesh, this.vertexB.x + x, this.vertexB.y + y, this.vertexB.z + z);
-        const newEdgeB = new Edge(this.mesh, this.vertexB, newVertB);
+        const newVertA = this.vertexA.extrude(x, y, z);
+        const newEdgeA = newVertA.diskLink.edge;
+        const newVertB = this.vertexB.extrude(x, y, z);
+        const newEdgeB = newVertB.diskLink.edge;
         const newParallelEdge = new Edge(this.mesh, newVertA, newVertB);
         // TODO Ensure the same normal direction (winding) to match adjacent faces once we add normals.
         new Face(this.mesh, [this.vertexA, this.vertexB, newVertB, newVertA], [this, newEdgeB, newParallelEdge, newEdgeA]);
-        // debugger
         return newParallelEdge;
     }
     // BM_edge_kill

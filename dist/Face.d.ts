@@ -40,6 +40,7 @@ export declare class Face extends BMeshElement {
     loop: Loop;
     edgeCount: number;
     constructor(mesh: BMesh, vertices: Vertex[], edges?: Edge[]);
+    extrude(x?: number, y?: number, z?: number, dupeFace?: boolean): Face;
     /**
      * Remove this face and its loops from the mesh.
      */

@@ -1,4 +1,4 @@
-import { type Edge, type Vertex } from 'bmesh'
+import { Face, type Edge, type Vertex } from 'bmesh'
 import { black, cyan, deeppink, plumParadise } from '../colors.js'
 import { App, Debug } from '../app.js'
 import { drawFacePoint, drawFaceVertsEdges } from './001_create.js'
@@ -35,7 +35,7 @@ function main() {
 		document.getElementById('btnPrev')!.addEventListener('click', prevEdge)
 		document.getElementById('btnNext')!.addEventListener('click', nextEdge)
 		document.getElementById('btnFlip')!.addEventListener('click', flip)
-		document.getElementById('btnExtrude')!.addEventListener('click', extrudeEdge)
+		document.getElementById('btnExtrude')!.addEventListener('click', extrudeFace)
 	}
 
 	function update() {
@@ -88,11 +88,12 @@ function main() {
 		update()
 	}
 
-	function extrudeEdge() {
-		if (!edge) return
-		edge = edge.extrude()
-		vert = edge.vertexA
-		loop = edge.radialLink?.loop
+	function extrudeFace() {
+		if (!loop) return
+		const face = loop.face.extrude()
+		loop = face.loop
+		vert = loop.vertex
+		edge = loop.edge
 		update()
 	}
 
@@ -114,22 +115,22 @@ function main() {
 			} else if (e.key === 'f') {
 				flip()
 			} else if (e.key === 'e') {
-				extrudeEdge()
+				extrudeFace()
 			}
 		})
 
 		// Hold shift and drag to move the current vertex on parallel to the screen.
 		window.addEventListener('pointermove', event => {
-			if (edge && event.shiftKey) {
-				moveEdgeParallelScreen(camera, edge, event.movementX, -event.movementY)
+			if (loop && event.shiftKey) {
+				moveFaceParallelScreen(camera, loop.face, event.movementX, -event.movementY)
 				update()
 			}
 		})
 	}
 }
 
-if (location.pathname.endsWith('005b_extrude_edge.html')) main()
+if (location.pathname.endsWith('005c_extrude_face.html')) main()
 
-export function moveEdgeParallelScreen(camera: PerspectiveCamera, edge: Edge, moveX: number, moveY: number) {
-	for (const vert of [edge.vertexA, edge.vertexB]) movePointParallelScreen(camera, vert.position, moveX, moveY)
+export function moveFaceParallelScreen(camera: PerspectiveCamera, face: Face, moveX: number, moveY: number) {
+	for (const { vertex } of face.loop) movePointParallelScreen(camera, vertex.position, moveX, moveY)
 }

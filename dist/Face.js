@@ -69,6 +69,38 @@ export class Face extends BMeshElement {
         if (edges.length !== new Set(edges).size)
             throw new TypeError('duplicate edges not allowed');
     }
+    extrude(x = 0, y = 0, z = 0, dupeFace = false) {
+        // The new vertices and edges of the new face.
+        const newVerts = [];
+        const newParallelEdges = [];
+        let lastLoop;
+        let lastNewVert;
+        let lastNewEdge;
+        // Extrude each vertex and edge, making faces around the extruded face.
+        for (const loop of this.loop) {
+            const newVert = loop.vertex.extrude(x, y, z);
+            newVerts.push(newVert);
+            const newEdge = newVert.diskLink.edge;
+            // Build the wall (series of faces) around the face extrusion.
+            if (lastLoop && lastNewVert && lastNewEdge) {
+                const newParallelEdge = new Edge(this.mesh, lastNewVert, newVert);
+                newParallelEdges.push(newParallelEdge);
+                new Face(this.mesh, [lastLoop.vertex, lastNewVert, newVert, loop.vertex], [lastNewEdge, newParallelEdge, newEdge, lastLoop.edge]);
+            }
+            lastLoop = loop;
+            lastNewVert = newVert;
+            lastNewEdge = newEdge;
+        }
+        // Close off the last piece of the wall, back to the beginning.
+        const newParallelEdge = new Edge(this.mesh, lastNewVert, newVerts[0]);
+        newParallelEdges.push(newParallelEdge);
+        new Face(this.mesh, [lastLoop.vertex, lastNewVert, newVerts[0], this.loop.vertex], [lastNewEdge, newParallelEdge, newVerts[0].diskLink.edge, lastLoop.edge]);
+        if (!dupeFace)
+            this.remove();
+        // Finally create the face that is the extrusion, and return it
+        // (typically this is the face the user will move).
+        return new Face(this.mesh, newVerts, newParallelEdges);
+    }
     // BM_face_kill
     /**
      * Remove this face and its loops from the mesh.
